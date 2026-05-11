@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weekly Ticket Reconciliation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f6f7f9; color: #1a1f2e; padding: 0; }
+    .app { max-width: 780px; margin: 0 auto; padding: 32px 24px 60px; }
+    .app-header { margin-bottom: 36px; padding-bottom: 24px; border-bottom: 1px solid #e2e6ee; }
+    .app-header h1 { font-size: 20px; font-weight: 600; color: #1a1f2e; letter-spacing: -0.3px; margin-bottom: 4px; }
+    .app-header p { font-size: 13px; color: #6b7280; }
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; margin-top: 32px; }
+    .section-pill { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; background: #1F4E79; color: #fff; padding: 3px 10px; border-radius: 20px; }
+    .section-pill.p2 { background: #2d6a4f; }
+    .section-title { font-size: 14px; font-weight: 600; color: #1a1f2e; }
+    .card { background: #fff; border: 1px solid #e2e6ee; border-radius: 10px; padding: 20px; margin-bottom: 10px; }
+    .card-label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .card-label i { font-size: 14px; color: #9ca3af; }
+
+    /* Screenshot drop zone */
+    .drop-zone {
+      border: 2px dashed #c5d8ec; border-radius: 8px; padding: 28px 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer; transition: all 0.15s; position: relative;
+      background: #f8fafd; min-height: 110px; text-align: center;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #1F4E79; background: #eff5fb; }
+    .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .drop-zone .dz-icon { font-size: 28px; color: #1F4E79; opacity: 0.6; }
+    .drop-zone .dz-title { font-size: 14px; font-weight: 500; color: #374151; }
+    .drop-zone .dz-hint  { font-size: 12px; color: #9ca3af; }
+    .drop-zone.has-file  { border-style: solid; border-color: #1F4E79; background: #eff5fb; }
+    .drop-zone .dz-preview { display: none; flex-direction: column; align-items: center; gap: 6px; }
+    .drop-zone.has-file .dz-default { display: none; }
+    .drop-zone.has-file .dz-preview { display: flex; }
+    .dz-thumb { max-width: 180px; max-height: 100px; border-radius: 4px; object-fit: contain; border: 1px solid #c5d8ec; }
+    .dz-fname { font-size: 11px; font-family: 'DM Mono', monospace; color: #1F4E79; }
+
+    /* Extracted rows preview */
+    .extracted-rows { margin-top: 12px; display: none; }
+    .extracted-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .extracted-header span { font-size: 12px; font-weight: 600; color: #374151; }
+    .btn-reextract { font-size: 11px; color: #6b7280; background: none; border: 1px solid #e5e7eb; border-radius: 5px; padding: 3px 10px; cursor: pointer; transition: all 0.12s; }
+    .btn-reextract:hover { border-color: #1F4E79; color: #1F4E79; }
+    .rows-table-wrap { overflow-x: auto; }
+    .rows-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .rows-table th { background: #f3f4f6; color: #6b7280; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+    .rows-table td { padding: 5px 8px; border-bottom: 1px solid #f3f4f6; font-family: 'DM Mono', monospace; color: #374151; }
+    .rows-table tr:last-child td { border-bottom: none; }
+    .rows-table tr:hover td { background: #fafbfc; }
+
+    /* File upload (generic) */
+    .file-upload { border: 1.5px dashed #d1d5db; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; }
+    .file-upload:hover { border-color: #1F4E79; background: #f0f5fb; }
+    .file-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .file-upload-icon { width: 30px; height: 30px; border-radius: 6px; background: #eff2f7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .file-upload-icon i { font-size: 15px; color: #1F4E79; }
+    .file-upload-text strong { font-size: 13px; font-weight: 500; color: #374151; display: block; }
+    .file-upload-text span { font-size: 11px; color: #9ca3af; }
+    .file-name { font-size: 11px; color: #1F4E79; font-family: 'DM Mono', monospace; margin-top: 6px; display: none; }
+
+    /* Match preview */
+    .match-btn { font-size: 12px; font-weight: 500; color: #1F4E79; background: #eff5fb; border: 1px solid #c5d8ec; border-radius: 6px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.12s; margin-top: 12px; }
+    .match-btn:hover { background: #dceaf6; }
+    .match-btn i { font-size: 14px; }
+    .match-grid { display: none; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .match-item { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; font-size: 11px; }
+    .match-item .pid { font-weight: 600; color: #1F4E79; font-family: 'DM Mono', monospace; }
+    .match-item .mfile { color: #6b7280; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .match-item .mdate { color: #9ca3af; margin-top: 1px; }
+
+    /* Buttons */
+    .btn-ghost { font-size: 12px; font-weight: 500; color: #6b7280; background: none; border: 1px solid #e5e7eb; border-radius: 6px; padding: 5px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.12s; }
+    .btn-ghost:hover { border-color: #1F4E79; color: #1F4E79; background: #f0f5fb; }
+    .btn-ghost i { font-size: 13px; }
+
+    .divider { height: 1px; background: #e2e6ee; margin: 28px 0; }
+
+    .generate-bar { background: #1F4E79; border-radius: 10px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 28px; }
+    .generate-bar .g-desc { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.5; }
+    .generate-bar .g-desc strong { color: #fff; }
+    .btn-generate { background: #fff; color: #1F4E79; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: background 0.12s, transform 0.1s; font-family: 'DM Sans', sans-serif; }
+    .btn-generate:hover { background: #e8f0fb; }
+    .btn-generate:active { transform: scale(0.97); }
+    .btn-generate i { font-size: 16px; }
+
+    /* Status */
+    .status { border-radius: 7px; padding: 10px 14px; font-size: 12px; margin-top: 12px; display: none; align-items: center; gap: 8px; }
+    .status i { font-size: 15px; flex-shrink: 0; }
+    .status.info    { background: #eff5fb; color: #1F4E79; border: 1px solid #c5d8ec; display: flex; }
+    .status.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: flex; }
+    .status.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: flex; }
+    .status.warn    { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; display: flex; }
+
+    .spinner { width: 13px; height: 13px; border: 2px solid rgba(31,78,121,0.2); border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <h1>Weekly Ticket Reconciliation</h1>
+    <p>Part 1 — StubHub &nbsp;·&nbsp; Part 2 — Network Summary &nbsp;→&nbsp; one combined output file</p>
+  </div>
+
+  <!-- PART 1 -->
+  <div class="section-header">
+    <span class="section-pill">Part 1</span>
+    <span class="section-title">StubHub</span>
+  </div>
+
+  <!-- Screenshot drop zone -->
+  <div class="card">
+    <div class="card-label"><i class="ti ti-screenshot" aria-hidden="true"></i> StubHub portal screenshot</div>
+    <div class="drop-zone" id="screenshot-zone">
+      <input type="file" id="screenshot-input" accept="image/*" onchange="onScreenshotSelected(this)"/>
+      <div class="dz-default">
+        <i class="ti ti-photo-up dz-icon" aria-hidden="true"></i>
+        <div class="dz-title">Drag &amp; drop your StubHub screenshot here</div>
+        <div class="dz-hint">or click to browse &nbsp;·&nbsp; PNG, JPG, WEBP</div>
+      </div>
+      <div class="dz-preview">
+        <img id="dz-thumb" class="dz-thumb" src="" alt="Screenshot preview"/>
+        <div id="dz-fname" class="dz-fname"></div>
+      </div>
+    </div>
+    <div id="extract-status" class="status" style="display:none;"></div>
+
+    <!-- Extracted rows table -->
+    <div class="extracted-rows" id="extracted-rows">
+      <div class="extracted-header">
+        <span id="extracted-count"></span>
+        <button class="btn-reextract" onclick="extractFromScreenshot()">Re-extract</button>
+      </div>
+      <div class="rows-table-wrap">
+        <table class="rows-table">
+          <thead>
+            <tr><th>Payment ID</th><th>Date</th><th>Proceeds</th><th>Charges</th><th>Credit</th></tr>
+          </thead>
+          <tbody id="extracted-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viagogo CSVs -->
+  <div class="card">
+    <div class="card-label"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> Viagogo CSV files</div>
+    <div class="file-upload">
+      <input type="file" id="csv-files" multiple accept=".csv" onchange="showFileName('csv-files','csv-fname')"/>
+      <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
+      <div class="file-upload-text">
+        <strong>Select all Viagogo CSV files</strong>
+        <span>Hold Shift or Cmd/Ctrl to select multiple</span>
+      </div>
+    </div>
+    <div class="file-name" id="csv-fname"></div>
+    <button class="match-btn" onclick="matchFiles()">
+      <i class="ti ti-refresh" aria-hidden="true"></i> Preview file matches
+    </button>
+    <div id="match-status" class="status" style="display:none;"></div>
+    <div id="match-results" class="match-grid" style="display:none;"></div>
+  </div>
+
+  <!-- StubHub invoice -->
+  <div class="card">
+    <div class="card-label"><i class="ti ti-file-invoice" aria-hidden="true"></i> StubHub Invoice Details (TicketVault)</div>
+    <div class="file-upload">
+      <input type="file" id="stubhub-invoice" accept=".xlsx" onchange="showFileName('stubhub-invoice','sb-fname')"/>
+      <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
+      <div class="file-upload-text">
+        <strong>Invoice Details Report .xlsx</strong>
+        <span>Used to match TransactionIDs</span>
+      </div>
+    </div>
+    <div class="file-name" id="sb-fname"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PART 2 -->
+  <div class="section-header">
+    <span class="section-pill p2">Part 2</span>
+    <span class="section-title">Six Networks</span>
+  </div>
+
+  <div class="card">
+    <div class="card-label"><i class="ti ti-calendar-week" aria-hidden="true"></i> Invoice Details — prior 7 invoice date days ending Sunday</div>
+    <div class="file-upload">
+      <input type="file" id="inv-det-file" accept=".xlsx" onchange="showFileName('inv-det-file','inv-det-fname')"/>
+      <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
+      <div class="file-upload-text">
+        <strong>Invoice Details Report .xlsx</strong>
+        <span>Gametime · TickPick · SeatGeek · Vivid Seats · GoTickets · TicketsNow</span>
+      </div>
+    </div>
+    <div class="file-name" id="inv-det-fname"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label"><i class="ti ti-calendar-event" aria-hidden="true"></i> Invoices — prior 7 event date days ending Sunday</div>
+    <div class="file-upload">
+      <input type="file" id="inv-file" accept=".xlsx" onchange="showFileName('inv-file','inv-fname')"/>
+      <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
+      <div class="file-upload-text">
+        <strong>Invoices Report .xlsx</strong>
+        <span>Unpaid sales — Pay on Delivery balance</span>
+      </div>
+    </div>
+    <div class="file-name" id="inv-fname"></div>
+  </div>
+
+  <div class="generate-bar">
+    <div class="g-desc">
+      Output: <strong>Weekly_Reconciliation.xlsx</strong><br>
+      StubHub Details tab + Network Summary tab
+    </div>
+    <button class="btn-generate" onclick="generate()">
+      <i class="ti ti-download" aria-hidden="true"></i> Generate report
+    </button>
+  </div>
+  <div id="gen-status" class="status" style="display:none;"></div>
+
+</div>
+
+<script>
+let extractedPayments = [];
+
+// ── Drag & drop ──────────────────────────────────────────────────────────────
+const zone = document.getElementById('screenshot-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    document.getElementById('screenshot-input').files = e.dataTransfer.files;
+    onScreenshotSelected(null, file);
+  }
+});
+
+function onScreenshotSelected(input, droppedFile) {
+  const file = droppedFile || (input && input.files[0]);
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('dz-thumb').src = e.target.result;
+    document.getElementById('dz-fname').textContent = file.name;
+    zone.classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+  extractFromScreenshot(file);
+}
+
+async function extractFromScreenshot(fileOverride) {
+  const input = document.getElementById('screenshot-input');
+  const file  = fileOverride || (input && input.files[0]);
+  if (!file) { showStatus('extract-status', 'error', 'No screenshot selected.'); return; }
+
+  document.getElementById('extracted-rows').style.display = 'none';
+  showStatus('extract-status', 'info', 'Reading screenshot with Claude Vision…');
+
+  const fd = new FormData();
+  fd.append('screenshot', file);
+
+  try {
+    const res  = await fetch('/extract_payments', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) { showStatus('extract-status', 'error', data.error); return; }
+
+    extractedPayments = data.rows || [];
+    renderExtractedRows(extractedPayments);
+    showStatus('extract-status', 'success',
+      `Extracted ${extractedPayments.length} payment row${extractedPayments.length !== 1 ? 's' : ''} from screenshot.`);
+  } catch (e) {
+    showStatus('extract-status', 'error', 'Request failed. Is the server running?');
+  }
+}
+
+function renderExtractedRows(rows) {
+  const tbody = document.getElementById('extracted-body');
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.payment_id}</td>
+      <td>${r.date}</td>
+      <td>${fmtNum(r.proceeds)}</td>
+      <td>${fmtNum(r.charges)}</td>
+      <td>${fmtNum(r.credit)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('extracted-count').textContent = `${rows.length} payments extracted`;
+  document.getElementById('extracted-rows').style.display = 'block';
+}
+
+function fmtNum(n) {
+  if (n === 0 || n === null || n === undefined) return '$0.00';
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ── File labels ──────────────────────────────────────────────────────────────
+function showFileName(inputId, labelId) {
+  const inp = document.getElementById(inputId);
+  const lbl = document.getElementById(labelId);
+  if (!lbl || !inp.files.length) return;
+  lbl.textContent = inp.files.length === 1 ? inp.files[0].name : `${inp.files.length} files selected`;
+  lbl.style.display = 'block';
+}
+
+// ── Match preview ─────────────────────────────────────────────────────────────
+async function matchFiles() {
+  const csvInput  = document.getElementById('csv-files');
+  const resultsEl = document.getElementById('match-results');
+  if (!csvInput.files.length) { showStatus('match-status','error','Select Viagogo CSV files first.'); return; }
+  if (!extractedPayments.length) { showStatus('match-status','error','Upload the portal screenshot first so payments can be extracted.'); return; }
+
+  showStatus('match-status', 'info', 'Matching files…');
+  resultsEl.innerHTML = ''; resultsEl.style.display = 'none';
+
+  const fd = new FormData();
+  for (const f of csvInput.files) fd.append('csv_files', f);
+  fd.append('payments', JSON.stringify(extractedPayments));
+
+  try {
+    const res  = await fetch('/match', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) { showStatus('match-status','error',data.error); return; }
+
+    const matched = data.matched || {}, unF = data.unmatched_files || [], unP = data.unmatched_payments || [];
+    let html = '';
+    for (const [pid, info] of Object.entries(matched))
+      html += `<div class="match-item"><div class="pid">${pid}</div><div class="mfile">📄 ${info.file}</div><div class="mdate">📅 ${info.date}</div></div>`;
+    unP.forEach(p => { html += `<div class="match-item" style="border-color:#fde68a;background:#fffbeb"><div class="pid" style="color:#92400e">⚠ ${p}</div><div class="mfile">No CSV found</div></div>`; });
+    unF.forEach(f => { html += `<div class="match-item" style="border-color:#fde68a;background:#fffbeb"><div class="pid" style="color:#92400e">⚠ Unmatched</div><div class="mfile">${f}</div></div>`; });
+
+    if (html) { resultsEl.innerHTML = html; resultsEl.style.display = 'grid'; }
+    const type = (unP.length || unF.length) ? 'warn' : 'success';
+    const msg  = `Matched ${Object.keys(matched).length} of ${extractedPayments.length} payments.`
+      + (unP.length ? ` ${unP.length} payment(s) unmatched.` : '')
+      + (unF.length ? ` ${unF.length} file(s) unmatched.` : '');
+    showStatus('match-status', type, msg);
+  } catch (e) {
+    showStatus('match-status', 'error', 'Request failed.');
+  }
+}
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+async function generate() {
+  const csvInput = document.getElementById('csv-files');
+  const sbInv    = document.getElementById('stubhub-invoice');
+  const invDet   = document.getElementById('inv-det-file');
+  const invFile  = document.getElementById('inv-file');
+
+  if (!extractedPayments.length) { showStatus('gen-status','error','Upload the portal screenshot first.'); return; }
+  if (!csvInput.files.length)    { showStatus('gen-status','error','Upload Viagogo CSV files.'); return; }
+  if (!sbInv.files.length)       { showStatus('gen-status','error','Upload the StubHub Invoice Details report.'); return; }
+  if (!invDet.files.length)      { showStatus('gen-status','error','Upload the Network Invoice Details report.'); return; }
+  if (!invFile.files.length)     { showStatus('gen-status','error','Upload the Network Invoices report.'); return; }
+
+  showStatus('gen-status', 'info', 'Processing — this may take a moment…');
+
+  const fd = new FormData();
+  for (const f of csvInput.files) fd.append('csv_files', f);
+  fd.append('stubhub_invoice', sbInv.files[0]);
+  fd.append('inv_det_file',    invDet.files[0]);
+  fd.append('inv_file',        invFile.files[0]);
+  fd.append('payments',        JSON.stringify(extractedPayments));
+
+  try {
+    const res = await fetch('/process', { method: 'POST', body: fd });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      showStatus('gen-status', 'error', d.error || 'Server error.'); return;
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'Weekly_Reconciliation.xlsx'; a.click();
+    URL.revokeObjectURL(url);
+    showStatus('gen-status', 'success', 'Weekly_Reconciliation.xlsx downloaded!');
+  } catch (e) {
+    showStatus('gen-status', 'error', 'Request failed.');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showStatus(elId, type, html) {
+  const el = document.getElementById(elId);
+  const icons = {
+    info:    '<div class="spinner"></div>',
+    success: '<i class="ti ti-circle-check"></i>',
+    error:   '<i class="ti ti-alert-circle"></i>',
+    warn:    '<i class="ti ti-alert-triangle"></i>'
+  };
+  el.className = `status ${type}`;
+  el.innerHTML = (icons[type] || '') + `<span>${html}</span>`;
+  el.style.display = 'flex';
+}
+</script>
+</body>
+</html>
