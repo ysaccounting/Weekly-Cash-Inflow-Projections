@@ -56,14 +56,14 @@
     /* File upload (generic) */
 
     .file-upload { position: relative; }
-    .file-upload.dragover { border-color: #1F4E79 !important; background: var(--color-background-info) !important; border-style: dashed !important; }
-    .file-upload.has-file { border-color: #1F4E79; border-style: solid; background: var(--color-background-info); }
-    .fu-clear { display: none; position: absolute; top: 6px; right: 8px; font-size: 10px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.9); border: 0.5px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; cursor: pointer; z-index: 10; transition: all .12s; }
+    .file-upload.dragover { border-color: #1F4E79 !important; background: #eff5fb !important; border-style: dashed !important; }
+    .file-upload.has-file { border-color: #1F4E79; border-style: solid; background: #eff5fb; }
+    .fu-clear { display: none; position: absolute; top: 6px; right: 8px; font-size: 10px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.95); border: 0.5px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; cursor: pointer; z-index: 20; pointer-events: all; transition: all .12s; }
     .fu-clear:hover { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
     .file-upload.has-file .fu-clear { display: block; }
     .file-upload { border: 1.5px dashed #d1d5db; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; }
     .file-upload:hover { border-color: #1F4E79; background: #f0f5fb; }
-    .file-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .file-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: calc(100% - 60px); }
     .file-upload-icon { width: 30px; height: 30px; border-radius: 6px; background: #eff2f7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .file-upload-icon i { font-size: 15px; color: #1F4E79; }
     .file-upload-text strong { font-size: 13px; font-weight: 500; color: #374151; display: block; }
