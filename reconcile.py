@@ -5,9 +5,9 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 POC_CLIENTS = ['Gametime', 'TickPick', 'SeatGeek']
-POD_CLIENTS = ['Vivid Seats', 'GoTickets', 'TicketsNow']
+POD_CLIENTS = ['Vivid Seats', 'GoTickets', 'TicketNetwork', 'TicketsNow']
 POC_ORDER   = ['Gametime', 'TickPick', 'SeatGeek']
-POD_ORDER   = ['Vivid Seats', 'GoTickets', 'TicketsNow']
+POD_ORDER   = ['Vivid Seats', 'GoTickets', 'TicketNetwork', 'TicketsNow']
 POD_RENAME  = {'TicketsNow': 'Ticketmaster'}
 ALL_SIX     = POC_CLIENTS + POD_CLIENTS
 
@@ -278,7 +278,7 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     _sc(ws, gap, 1, 'Pay on Delivery',
         bg=DARK_BLUE, fg=WHITE, bold=True, sz=11, merge_to=5)
     ws.row_dimensions[gap + 1].height = 13
-    _sc(ws, gap + 1, 1, 'Vivid Seats - GoTickets - Ticketmaster',
+    _sc(ws, gap + 1, 1, 'Vivid Seats - GoTickets - TicketNetwork - Ticketmaster',
         fg='777777', sz=9, merge_to=5)
 
     hdr = gap + 2
