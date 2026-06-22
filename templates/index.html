@@ -249,7 +249,7 @@
     </button>
   </div>
 
-  <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+  <div style="display:flex; justify-content:center; margin-top:12px;">
     <button class="btn-generate" onclick="generate()" style="background:#1F4E79;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;transition:background .12s,transform .1s;">
       <i class="ti ti-download" aria-hidden="true"></i> Generate report
     </button>
@@ -430,6 +430,7 @@ async function generate() {
   if (!invDet.files.length)      { showStatus('gen-status','error','Upload the Network Invoice Details report.'); return; }
   if (!invFile.files.length)     { showStatus('gen-status','error','Upload the Network Invoices report.'); return; }
 
+  const genSt = document.getElementById('gen-status'); genSt.style.display='none';
   showStatus('gen-status', 'info', 'Processing — this may take a moment…');
 
   const fd = new FormData();
@@ -453,7 +454,8 @@ async function generate() {
     const a    = document.createElement('a');
     a.href = url; a.download = fname; a.click();
     URL.revokeObjectURL(url);
-    // file downloaded silently — no message needed
+    showStatus('gen-status', 'success', 'Report downloaded!');
+    setTimeout(() => { document.getElementById('gen-status').style.display = 'none'; }, 3000);
   } catch (e) {
     showStatus('gen-status', 'error', 'Request failed.');
   }
