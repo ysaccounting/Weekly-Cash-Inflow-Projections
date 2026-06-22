@@ -54,6 +54,13 @@
     .rows-table tr:hover td { background: #fafbfc; }
 
     /* File upload (generic) */
+
+    .file-upload { position: relative; }
+    .file-upload.dragover { border-color: #1F4E79 !important; background: var(--color-background-info) !important; border-style: dashed !important; }
+    .file-upload.has-file { border-color: #1F4E79; border-style: solid; background: var(--color-background-info); }
+    .fu-clear { display: none; position: absolute; top: 6px; right: 8px; font-size: 10px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.9); border: 0.5px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; cursor: pointer; z-index: 10; transition: all .12s; }
+    .fu-clear:hover { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
+    .file-upload.has-file .fu-clear { display: block; }
     .file-upload { border: 1.5px dashed #d1d5db; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; }
     .file-upload:hover { border-color: #1F4E79; background: #f0f5fb; }
     .file-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
@@ -99,6 +106,12 @@
     .spinner { width: 13px; height: 13px; border: 2px solid rgba(31,78,121,0.2); border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .zone-clear { position: absolute; top: 6px; right: 6px; font-size: 10px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.85); border: 0.5px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; cursor: pointer; display: none; z-index: 10; transition: all .12s; }
+    .zone-clear:hover { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
+    .file-row { position: relative; }
+    .file-row .zone-clear { display: none; }
+    .file-row.done .zone-clear { display: block; }
+    .dropzone.done .zone-clear { display: block; }
     .btn-clear { font-size: 12px; font-weight: 500; color: #991b1b; background: none; border: 1px solid #fecaca; border-radius: 6px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.12s; }
     .btn-clear:hover { background: #fef2f2; border-color: #f87171; }
     .btn-clear i { font-size: 14px; }
@@ -155,13 +168,17 @@
   <!-- Viagogo CSVs -->
   <div class="card">
     <div class="card-label"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> StubHub Portal CSV Files</div>
-    <div class="file-upload">
-      <input type="file" id="csv-files" multiple accept=".csv" onchange="showFileName('csv-files','csv-fname')"/>
+    <div class="file-upload" id="fu-csv"
+         ondragover="fuDragOver(event,'fu-csv')"
+         ondragleave="fuDragLeave('fu-csv')"
+         ondrop="fuDrop(event,'fu-csv','csv-files','csv-fname')">
+      <input type="file" id="csv-files" multiple accept=".csv" onchange="showFileName('csv-files','csv-fname','fu-csv')"/>
       <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
       <div class="file-upload-text">
         <strong>Select all Viagogo CSV files</strong>
         <span>Hold Shift or Cmd/Ctrl to select multiple</span>
       </div>
+      <button class="fu-clear" onclick="clearUpload('csv-files','csv-fname','fu-csv',event)">✕ Clear</button>
     </div>
     <div class="file-name" id="csv-fname"></div>
     <button class="match-btn" onclick="matchFiles()">
@@ -174,13 +191,17 @@
   <!-- StubHub invoice -->
   <div class="card">
     <div class="card-label"><i class="ti ti-file-invoice" aria-hidden="true"></i> StubHub Invoice Details (TicketVault)</div>
-    <div class="file-upload">
-      <input type="file" id="stubhub-invoice" accept=".xlsx" onchange="showFileName('stubhub-invoice','sb-fname')"/>
+    <div class="file-upload" id="fu-sb"
+         ondragover="fuDragOver(event,'fu-sb')"
+         ondragleave="fuDragLeave('fu-sb')"
+         ondrop="fuDrop(event,'fu-sb','stubhub-invoice','sb-fname')">
+      <input type="file" id="stubhub-invoice" accept=".xlsx" onchange="showFileName('stubhub-invoice','sb-fname','fu-sb')"/>
       <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
       <div class="file-upload-text">
         <strong>Invoice Details Report .xlsx</strong>
         <span>Used to match TransactionIDs</span>
       </div>
+      <button class="fu-clear" onclick="clearUpload('stubhub-invoice','sb-fname','fu-sb',event)">✕ Clear</button>
     </div>
     <div class="file-name" id="sb-fname"></div>
   </div>
@@ -195,26 +216,32 @@
 
   <div class="card">
     <div class="card-label"><i class="ti ti-calendar-week" aria-hidden="true"></i> Invoice Details — prior 7 invoice date days ending Sunday</div>
-    <div class="file-upload">
-      <input type="file" id="inv-det-file" accept=".xlsx" onchange="showFileName('inv-det-file','inv-det-fname')"/>
+    <div class="file-upload" id="fu-invdet"
+         ondragover="fuDragOver(event,'fu-invdet')"
+         ondragleave="fuDragLeave('fu-invdet')"
+         ondrop="fuDrop(event,'fu-invdet','inv-det-file','inv-det-fname')">
+      <input type="file" id="inv-det-file" accept=".xlsx" onchange="showFileName('inv-det-file','inv-det-fname','fu-invdet')"/>
       <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
       <div class="file-upload-text">
         <strong>Invoice Details Report .xlsx</strong>
-        
       </div>
+      <button class="fu-clear" onclick="clearUpload('inv-det-file','inv-det-fname','fu-invdet',event)">✕ Clear</button>
     </div>
     <div class="file-name" id="inv-det-fname"></div>
   </div>
 
   <div class="card">
     <div class="card-label"><i class="ti ti-calendar-event" aria-hidden="true"></i> Invoices — prior 7 event date days ending Sunday</div>
-    <div class="file-upload">
-      <input type="file" id="inv-file" accept=".xlsx" onchange="showFileName('inv-file','inv-fname')"/>
+    <div class="file-upload" id="fu-inv"
+         ondragover="fuDragOver(event,'fu-inv')"
+         ondragleave="fuDragLeave('fu-inv')"
+         ondrop="fuDrop(event,'fu-inv','inv-file','inv-fname')">
+      <input type="file" id="inv-file" accept=".xlsx" onchange="showFileName('inv-file','inv-fname','fu-inv')"/>
       <div class="file-upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
       <div class="file-upload-text">
         <strong>Unpaid Invoices Report .xlsx</strong>
-        
       </div>
+      <button class="fu-clear" onclick="clearUpload('inv-file','inv-fname','fu-inv',event)">✕ Clear</button>
     </div>
     <div class="file-name" id="inv-fname"></div>
   </div>
@@ -317,12 +344,47 @@ function fmtNum(n) {
 }
 
 // ── File labels ──────────────────────────────────────────────────────────────
-function showFileName(inputId, labelId) {
+function showFileName(inputId, labelId, zoneId) {
   const inp = document.getElementById(inputId);
   const lbl = document.getElementById(labelId);
   if (!lbl || !inp.files.length) return;
   lbl.textContent = inp.files.length === 1 ? inp.files[0].name : `${inp.files.length} files selected`;
   lbl.style.display = 'block';
+  if (zoneId) document.getElementById(zoneId).classList.add('has-file');
+}
+
+function fuDragOver(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.add('dragover');
+}
+
+function fuDragLeave(zoneId) {
+  document.getElementById(zoneId).classList.remove('dragover');
+}
+
+function fuDrop(e, zoneId, inputId, labelId) {
+  e.preventDefault();
+  e.stopPropagation();
+  const zone = document.getElementById(zoneId);
+  zone.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (!files.length) return;
+  // Assign dropped files to the input
+  const inp = document.getElementById(inputId);
+  const dt = new DataTransfer();
+  Array.from(files).forEach(f => dt.items.add(f));
+  inp.files = dt.files;
+  showFileName(inputId, labelId, zoneId);
+}
+
+function clearUpload(inputId, labelId, zoneId, e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  const inp = document.getElementById(inputId);
+  inp.value = '';
+  const lbl = document.getElementById(labelId);
+  if (lbl) { lbl.textContent = ''; lbl.style.display = 'none'; }
+  const zone = document.getElementById(zoneId);
+  if (zone) zone.classList.remove('has-file', 'dragover');
 }
 
 // ── Match preview ─────────────────────────────────────────────────────────────
@@ -433,7 +495,11 @@ function clearAll() {
   document.getElementById('extracted-body').innerHTML = '';
   ['csv-fname','sb-fname','inv-det-fname','inv-fname'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+  });
+  ['fu-csv','fu-sb','fu-invdet','fu-inv'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('has-file','dragover');
   });
   document.getElementById('match-results').innerHTML = '';
   document.getElementById('match-results').style.display = 'none';

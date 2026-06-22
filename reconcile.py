@@ -8,7 +8,7 @@ POC_CLIENTS = ['Gametime', 'TickPick', 'SeatGeek']
 POD_CLIENTS = ['Vivid Seats', 'GoTickets', 'TicketNetwork', 'TicketsNow']
 POC_ORDER   = ['Gametime', 'TickPick', 'SeatGeek']
 POD_ORDER   = ['Vivid Seats', 'GoTickets', 'TicketNetwork', 'TicketsNow']
-POD_RENAME  = {'TicketsNow': 'Ticketmaster'}
+POD_RENAME  = {'TicketsNow': 'TicketMaster'}
 ALL_SIX     = POC_CLIENTS + POD_CLIENTS
 
 DARK_BLUE = '1F4E79'
@@ -125,7 +125,7 @@ def build_part1_df(csv_files: dict, matched: dict, invoice_bytes: bytes) -> pd.D
     extra = [c for c in combined.columns if c not in cols]
     combined = combined[cols + extra]
     combined['InInvoice'] = combined['TransactionID'].apply(
-        lambda x: 1 if str(x).strip() in inv_ids else 0
+        lambda x: 'Yes' if str(x).strip() in inv_ids else 'No'
     )
     return combined
 
@@ -229,7 +229,7 @@ def _write_part1_sheet(ws, df: pd.DataFrame):
                 c.fill          = base_fill
                 c.number_format = CURR
             elif col_name == 'InInvoice':
-                c.fill      = fill_yes if value == 1 else fill_no
+                c.fill      = fill_yes if value == 'Yes' else fill_no
                 c.alignment = Alignment(horizontal='center', vertical='center')
             else:
                 c.fill = base_fill
