@@ -278,7 +278,7 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     _sc(ws, gap, 1, 'Pay on Delivery',
         bg=DARK_BLUE, fg=WHITE, bold=True, sz=11, merge_to=5)
     ws.row_dimensions[gap + 1].height = 13
-    _sc(ws, gap + 1, 1, 'Vivid Seats - GoTickets - TicketNetwork - Ticketmaster',
+    _sc(ws, gap + 1, 1, 'Vivid Seats - GoTickets - TicketNetwork - TicketMaster',
         fg='777777', sz=9, merge_to=5)
 
     hdr = gap + 2

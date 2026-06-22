@@ -37,6 +37,7 @@
     .drop-zone .dz-preview { display: none; flex-direction: column; align-items: center; gap: 6px; }
     .drop-zone.has-file .dz-default { display: none; }
     .drop-zone.has-file .dz-preview { display: flex; }
+    .drop-zone.has-file #dz-clear { display: flex; }
     .dz-thumb { max-width: 180px; max-height: 100px; border-radius: 4px; object-fit: contain; border: 1px solid #c5d8ec; }
     .dz-fname { font-size: 11px; font-family: 'DM Mono', monospace; color: #1F4E79; }
 
@@ -58,9 +59,9 @@
     .file-upload { position: relative; }
     .file-upload.dragover { border-color: #1F4E79 !important; background: #eff5fb !important; border-style: dashed !important; }
     .file-upload.has-file { border-color: #1F4E79; border-style: solid; background: #eff5fb; }
-    .fu-clear { display: none; position: absolute; top: 6px; right: 8px; font-size: 10px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.95); border: 0.5px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; cursor: pointer; z-index: 20; pointer-events: all; transition: all .12s; }
-    .fu-clear:hover { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
-    .file-upload.has-file .fu-clear { display: block; }
+    .fu-clear { display: none; position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 500; color: #991b1b; background: #fff; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 10px; cursor: pointer; z-index: 20; pointer-events: all; transition: all .12s; display: none; align-items: center; gap: 4px; }
+    .fu-clear:hover { background: #fef2f2; border-color: #f87171; }
+    .file-upload.has-file .fu-clear { display: flex; }
     .file-upload { border: 1.5px dashed #d1d5db; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; }
     .file-upload:hover { border-color: #1F4E79; background: #f0f5fb; }
     .file-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: calc(100% - 60px); }
@@ -87,13 +88,8 @@
 
     .divider { height: 1px; background: #e2e6ee; margin: 28px 0; }
 
-    .generate-bar { background: #1F4E79; border-radius: 10px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 28px; }
-    .generate-bar .g-desc { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.5; }
-    .generate-bar .g-desc strong { color: #fff; }
-    .btn-generate { background: #fff; color: #1F4E79; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: background 0.12s, transform 0.1s; font-family: 'DM Sans', sans-serif; }
-    .btn-generate:hover { background: #e8f0fb; }
+    .btn-generate:hover { background: #174069 !important; }
     .btn-generate:active { transform: scale(0.97); }
-    .btn-generate i { font-size: 16px; }
 
     /* Status */
     .status { border-radius: 7px; padding: 10px 14px; font-size: 12px; margin-top: 12px; display: none; align-items: center; gap: 8px; }
@@ -134,13 +130,14 @@
   <!-- Screenshot drop zone -->
   <div class="card">
     <div class="card-label"><i class="ti ti-screenshot" aria-hidden="true"></i> StubHub portal screenshot</div>
-    <div class="drop-zone" id="screenshot-zone">
+    <div class="drop-zone" id="screenshot-zone" style="position:relative;">
       <input type="file" id="screenshot-input" accept="image/*" onchange="onScreenshotSelected(this)"/>
       <div class="dz-default">
         <i class="ti ti-photo-up dz-icon" aria-hidden="true"></i>
         <div class="dz-title">Drag &amp; drop your StubHub screenshot here</div>
         <div class="dz-hint">or click to browse &nbsp;·&nbsp; PNG, JPG, WEBP</div>
       </div>
+      <button class="fu-clear" id="dz-clear" onclick="clearScreenshot(event)" style="position:absolute;top:8px;right:8px;"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
       <div class="dz-preview">
         <img id="dz-thumb" class="dz-thumb" src="" alt="Screenshot preview"/>
         <div id="dz-fname" class="dz-fname"></div>
@@ -178,7 +175,7 @@
         <strong>Select all Viagogo CSV files</strong>
         <span>Hold Shift or Cmd/Ctrl to select multiple</span>
       </div>
-      <button class="fu-clear" onclick="clearUpload('csv-files','csv-fname','fu-csv',event)">✕ Clear</button>
+      <button class="fu-clear" onclick="clearUpload('csv-files','csv-fname','fu-csv',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
     </div>
     <div class="file-name" id="csv-fname"></div>
     <button class="match-btn" onclick="matchFiles()">
@@ -201,7 +198,7 @@
         <strong>Invoice Details Report .xlsx</strong>
         <span>Used to match TransactionIDs</span>
       </div>
-      <button class="fu-clear" onclick="clearUpload('stubhub-invoice','sb-fname','fu-sb',event)">✕ Clear</button>
+      <button class="fu-clear" onclick="clearUpload('stubhub-invoice','sb-fname','fu-sb',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
     </div>
     <div class="file-name" id="sb-fname"></div>
   </div>
@@ -225,7 +222,7 @@
       <div class="file-upload-text">
         <strong>Invoice Details Report .xlsx</strong>
       </div>
-      <button class="fu-clear" onclick="clearUpload('inv-det-file','inv-det-fname','fu-invdet',event)">✕ Clear</button>
+      <button class="fu-clear" onclick="clearUpload('inv-det-file','inv-det-fname','fu-invdet',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
     </div>
     <div class="file-name" id="inv-det-fname"></div>
   </div>
@@ -241,7 +238,7 @@
       <div class="file-upload-text">
         <strong>Unpaid Invoices Report .xlsx</strong>
       </div>
-      <button class="fu-clear" onclick="clearUpload('inv-file','inv-fname','fu-inv',event)">✕ Clear</button>
+      <button class="fu-clear" onclick="clearUpload('inv-file','inv-fname','fu-inv',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
     </div>
     <div class="file-name" id="inv-fname"></div>
   </div>
@@ -252,16 +249,12 @@
     </button>
   </div>
 
-  <div class="generate-bar">
-    <div class="g-desc">
-      Output: <strong>Cash Inflow Projection [date range].xlsx</strong><br>
-      StubHub tab + Other Networks tab
-    </div>
-    <button class="btn-generate" onclick="generate()">
+  <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+    <button class="btn-generate" onclick="generate()" style="background:#1F4E79;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;transition:background .12s,transform .1s;">
       <i class="ti ti-download" aria-hidden="true"></i> Generate report
     </button>
   </div>
-  <div id="gen-status" class="status" style="display:none;"></div>
+  <div id="gen-status" class="status" style="display:none;margin-top:10px;"></div>
 
 </div>
 
@@ -460,7 +453,7 @@ async function generate() {
     const a    = document.createElement('a');
     a.href = url; a.download = fname; a.click();
     URL.revokeObjectURL(url);
-    showStatus('gen-status', 'success', fname + ' downloaded!');
+    // file downloaded silently — no message needed
   } catch (e) {
     showStatus('gen-status', 'error', 'Request failed.');
   }
@@ -481,9 +474,22 @@ function showStatus(elId, type, html) {
 }
 
 // ── Clear all ─────────────────────────────────────────────────────────────────
-function clearAll() {
+function clearScreenshot(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
   extractedPayments = [];
-  ['screenshot-input','csv-files','stubhub-invoice','inv-det-file','inv-file'].forEach(id => {
+  document.getElementById('screenshot-input').value = '';
+  document.getElementById('dz-thumb').src = '';
+  document.getElementById('dz-fname').textContent = '';
+  document.getElementById('screenshot-zone').classList.remove('has-file','dragover');
+  document.getElementById('extracted-rows').style.display = 'none';
+  document.getElementById('extracted-body').innerHTML = '';
+  const st = document.getElementById('extract-status');
+  if (st) st.style.display = 'none';
+}
+
+function clearAll() {
+  clearScreenshot();
+  ['csv-files','stubhub-invoice','inv-det-file','inv-file'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
