@@ -159,10 +159,11 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
     pod_data = []
     for cl in POD_ORDER:
         display = POD_RENAME.get(cl, cl)
-        ns = new_sales.get(cl, 0)
+        ns = round(new_sales.get(cl, 0) / 1000) * 1000
         a6 = adj60.get(cl, 0)
         up = unpaid.get(cl, 0)
-        pod_data.append((display, ns, a6, up, a6 + up))
+        pj = round((a6 + up) / 1000) * 1000
+        pod_data.append((display, ns, a6, up, pj))
 
     return date_range, poc_rows, poc_total, pod_data
 
