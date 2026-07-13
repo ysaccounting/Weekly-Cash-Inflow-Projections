@@ -145,7 +145,7 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
     date_range = f'{date_min} - {date_max}'
 
     poc_sales = inv_det[inv_det['Client'].isin(POC_CLIENTS)].groupby('Client')['Total Price'].sum()
-    poc_rows  = [(cl, poc_sales.get(cl, 0)) for cl in POC_ORDER]
+    poc_rows  = [(cl, round(poc_sales.get(cl, 0) / 1000) * 1000) for cl in POC_ORDER]
     poc_total = sum(r[1] for r in poc_rows)
 
     pod_det    = inv_det[inv_det['Client'].isin(POD_CLIENTS)].copy()
@@ -159,7 +159,7 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
     pod_data = []
     for cl in POD_ORDER:
         display = POD_RENAME.get(cl, cl)
-        ns = round(new_sales.get(cl, 0) / 1000) * 1000
+        ns = new_sales.get(cl, 0)
         a6 = adj60.get(cl, 0)
         up = unpaid.get(cl, 0)
         pj = round((a6 + up) / 1000) * 1000
