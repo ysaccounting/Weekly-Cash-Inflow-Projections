@@ -124,9 +124,11 @@ def build_part1_df(csv_files: dict, matched: dict, invoice_bytes: bytes) -> pd.D
             'TransactionID', 'Description', 'Total']
     extra = [c for c in combined.columns if c not in cols]
     combined = combined[cols + extra]
-    combined['InInvoice'] = combined['TransactionID'].apply(
-        lambda x: 'Yes' if str(x).strip() in inv_ids else 'No'
-    )
+    def _flag(row, inv_ids):
+        if row['Total'] < 0 and str(row.get('Description', '')).strip() in ('', 'nan', 'None'):
+            return 'Yes'
+        return 'Yes' if str(row['TransactionID']).strip() in inv_ids else 'No'
+    combined['InInvoice'] = combined.apply(lambda row: _flag(row, inv_ids), axis=1)
     return combined
 
 
