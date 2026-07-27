@@ -39,7 +39,7 @@ def _sc(ws, r, c, val=None, bg=WHITE, fg='000000', bold=False, sz=10,
         ha='left', fmt=None, wrap=False, merge_to=None):
     bdr = _thin_border()
     cell = ws.cell(row=r, column=c, value=val)
-    cell.font      = Font(name='Arial', bold=bold, color=fg, size=sz)
+    cell.font      = Font(name='Calibri', bold=bold, color=fg, size=sz)
     cell.fill      = PatternFill('solid', start_color=bg)
     cell.alignment = Alignment(horizontal=ha, vertical='center', wrap_text=wrap)
     cell.border    = bdr
@@ -172,6 +172,99 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
 
 # ── Combined output ───────────────────────────────────────────────────────────
 
+def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
+    """Pivot: rows = Found in Y&S / Payment Date, values = Sum of Total."""
+    bdr = _thin_border()
+
+    # Build pivot data
+    pivot = df.groupby(['InInvoice', 'PaymentDate'])['Total'].sum().reset_index()
+    pivot.columns = ['Found in Y&S', 'Payment Date', 'Sum of Total']
+
+    # Sort: Yes first, then No; within each group sort by date
+    pivot['_sort'] = pivot['Found in Y&S'].map({'Yes': 0, 'No': 1})
+    pivot['_date'] = pd.to_datetime(pivot['Payment Date'], format='%d/%m/%Y')
+    pivot = pivot.sort_values(['_sort', '_date']).drop(columns=['_sort', '_date'])
+
+    # Place pivot header in column J onwards (col 10) to avoid overlapping detail
+    PCOL = 10  # pivot starts at column J
+
+    # Header
+    ws.row_dimensions[start_row].height = 20
+    for ci, name in enumerate(['Found in Y&S', 'Payment Date', 'Sum of Total'], 1):
+        c = ws.cell(row=start_row, column=PCOL + ci - 1, value=name)
+        c.font      = Font(name='Calibri', bold=True, color=WHITE, size=12)
+        c.fill      = PatternFill('solid', start_color=DARK_BLUE)
+        c.alignment = Alignment(horizontal='center', vertical='center')
+        c.border    = bdr
+
+    # Set pivot column widths
+    for i, w in enumerate([18, 16, 18], PCOL):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
+    # Group totals tracker
+    current_group = None
+    row = start_row + 1
+
+    rows_list = pivot.values.tolist()
+    for i, (found, pdate, total) in enumerate(rows_list):
+        ws.row_dimensions[row].height = 16
+        # Detect group change
+        if found != current_group:
+            current_group = found
+            group_start = row
+
+        fill = PatternFill('solid', start_color='E2EFDA') if found == 'Yes' else PatternFill('solid', start_color='FCE4D6')
+
+        c1 = ws.cell(row=row, column=PCOL, value=found)
+        c1.font = Font(name='Calibri', size=12); c1.fill = fill; c1.border = bdr
+        c1.alignment = Alignment(horizontal='center', vertical='center')
+
+        c2 = ws.cell(row=row, column=PCOL+1, value=pdate)
+        c2.font = Font(name='Calibri', size=12); c2.fill = fill; c2.border = bdr
+        c2.alignment = Alignment(horizontal='center', vertical='center')
+
+        c3 = ws.cell(row=row, column=PCOL+2, value=total)
+        c3.font = Font(name='Calibri', size=12); c3.fill = fill; c3.border = bdr
+        c3.alignment = Alignment(horizontal='center', vertical='center')
+        c3.number_format = CURR
+
+        # Check if next row is a different group or end — write subtotal
+        next_group = rows_list[i+1][0] if i+1 < len(rows_list) else None
+        if next_group != found:
+            row += 1
+            ws.row_dimensions[row].height = 16
+            subtotal = sum(r[2] for r in rows_list if r[0] == found)
+            for ci, col in enumerate([PCOL, PCOL+1, PCOL+2], 0):
+                c = ws.cell(row=row, column=col)
+                c.font   = Font(name='Calibri', bold=True, color=WHITE, size=12)
+                c.fill   = PatternFill('solid', start_color=DARK_BLUE)
+                c.border = bdr
+                c.alignment = Alignment(horizontal='left' if ci == 0 else 'center', vertical='center')
+            ws.cell(row=row, column=PCOL).value = f'{found} — Subtotal'
+            ws.cell(row=row, column=PCOL+2).value = subtotal
+            ws.cell(row=row, column=PCOL+2).number_format = CURR
+            row += 1  # blank gap between groups
+            ws.row_dimensions[row].height = 8
+            row += 1
+
+        row += 1
+
+    # Grand total
+    ws.row_dimensions[row].height = 16
+    grand = df['Total'].sum()
+    for ci in range(1, 4):
+        c = ws.cell(row=row, column=ci)
+        c.font   = Font(name='Calibri', bold=True, color=WHITE, size=12)
+        c.fill   = PatternFill('solid', start_color=MID_BLUE)
+        c.border = bdr
+        c.alignment = Alignment(horizontal='center' if ci > 1 else 'left', vertical='center')
+    ws.cell(row=row, column=1).value = 'GRAND TOTAL'
+    ws.cell(row=row, column=3).value = grand
+    ws.cell(row=row, column=3).number_format = CURR
+
+    ws.freeze_panes = 'A2'
+
+
 def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
     """Returns (xlsx_bytes, filename)."""
     date_range, poc_rows, poc_total, pod_data = part2_data
@@ -190,7 +283,8 @@ def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
 
     ws1 = wb.active
     ws1.title = 'StubHub'
-    _write_part1_sheet(ws1, part1_df)
+    detail_rows = _write_part1_sheet(ws1, part1_df)
+    _write_stubhub_pivot(ws1, part1_df, start_row=detail_rows + 3)
 
     ws2 = wb.create_sheet('Other Networks')
     _write_part2_sheet(ws2, date_range, poc_rows, poc_total, pod_data)
@@ -209,19 +303,18 @@ def _write_part1_sheet(ws, df: pd.DataFrame):
 
     for col_idx, display_name in enumerate(display_headers, 1):
         c = ws.cell(row=1, column=col_idx, value=display_name)
-        c.font      = Font(name='Arial', bold=True, color=WHITE)
+        c.font      = Font(name='Calibri', bold=True, color=WHITE, size=12)
         c.fill      = PatternFill('solid', start_color=DARK_BLUE)
         c.alignment = Alignment(horizontal='center', vertical='center')
         c.border    = bdr
 
-    fill_a   = PatternFill('solid', start_color=LT_BLUE)
     fill_b   = PatternFill('solid', start_color=WHITE)
     fill_yes = PatternFill('solid', start_color='E2EFDA')
     fill_no  = PatternFill('solid', start_color='FCE4D6')
-    data_fnt = Font(name='Arial', size=10)
+    data_fnt = Font(name='Calibri', size=12)
 
     for row_idx, row in enumerate(df.itertuples(index=False), 2):
-        base_fill = fill_a if row_idx % 2 == 0 else fill_b
+        base_fill = fill_b
         for col_idx, value in enumerate(row, 1):
             c = ws.cell(row=row_idx, column=col_idx, value=value)
             c.font   = data_fnt
@@ -245,15 +338,16 @@ def _write_part1_sheet(ws, df: pd.DataFrame):
 
     ws.row_dimensions[1].height = 20
     ws.freeze_panes = 'A2'
+    return 1 + len(df)
 
 
 def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     for i, w in enumerate([22, 18, 16, 32, 16], 1):
         ws.column_dimensions[get_column_letter(i)].width = w
 
-    ws.row_dimensions[1].height = 20
+    ws.row_dimensions[1].height = 22
     _sc(ws, 1, 1, f'Week of  {date_range}',
-        bg=MID_BLUE, fg=WHITE, sz=10, ha='left', merge_to=5)
+        bg=MID_BLUE, fg=WHITE, sz=12, ha='left', merge_to=5)
 
     ws.row_dimensions[2].height = 24
     _sc(ws, 2, 1, 'Pay on Confirmation',
@@ -267,9 +361,8 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
 
     for ri, (client, sales) in enumerate(poc_rows, 5):
         ws.row_dimensions[ri].height = 16
-        bg = LT_BLUE if ri % 2 == 1 else WHITE
-        _sc(ws, ri, 1, client, bg=bg)
-        _sc(ws, ri, 2, sales,  bg=bg, ha='center', fmt=CURR)
+        _sc(ws, ri, 1, client, bg=WHITE)
+        _sc(ws, ri, 2, sales,  bg=WHITE, ha='center', fmt=CURR)
 
     tr1 = 5 + len(poc_rows)
     ws.row_dimensions[tr1].height = 16
@@ -292,12 +385,11 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
 
     for ri, (cl, ns, a6, up, pj) in enumerate(pod_data, hdr + 1):
         ws.row_dimensions[ri].height = 16
-        bg = LT_BLUE if ri % 2 == 0 else WHITE
-        _sc(ws, ri, 1, cl, bg=bg)
-        _sc(ws, ri, 2, ns, bg=bg, ha='center', fmt=CURR)
-        _sc(ws, ri, 3, a6, bg=bg, ha='center', fmt=CURR)
-        _sc(ws, ri, 4, up, bg=bg, ha='center', fmt=CURR)
-        _sc(ws, ri, 5, pj, bg=bg, ha='center', fmt=CURR)
+        _sc(ws, ri, 1, cl, bg=WHITE)
+        _sc(ws, ri, 2, ns, bg=WHITE, ha='center', fmt=CURR)
+        _sc(ws, ri, 3, a6, bg=WHITE, ha='center', fmt=CURR)
+        _sc(ws, ri, 4, up, bg=WHITE, ha='center', fmt=CURR)
+        _sc(ws, ri, 5, pj, bg=WHITE, ha='center', fmt=CURR)
 
     tr2 = hdr + 1 + len(pod_data)
     ws.row_dimensions[tr2].height = 16
