@@ -147,8 +147,8 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
     date_range = f'{date_min} - {date_max}'
 
     poc_sales = inv_det[inv_det['Client'].isin(POC_CLIENTS)].groupby('Client')['Total Price'].sum()
-    poc_rows  = [(cl, round(poc_sales.get(cl, 0) / 1000) * 1000) for cl in POC_ORDER]
-    poc_total = sum(r[1] for r in poc_rows)
+    poc_rows  = [(cl, int(round(poc_sales.get(cl, 0) / 1000) * 1000)) for cl in POC_ORDER]
+    poc_total = int(round(sum(r[1] for r in poc_rows) / 1000) * 1000)
 
     pod_det    = inv_det[inv_det['Client'].isin(POD_CLIENTS)].copy()
     inv_orders = set(inv['Ext Order #'].dropna().astype(str))
@@ -164,7 +164,7 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
         ns = new_sales.get(cl, 0)
         a6 = adj60.get(cl, 0)
         up = unpaid.get(cl, 0)
-        pj = round((a6 + up) / 1000) * 1000
+        pj = int(round((a6 + up) / 1000) * 1000)
         pod_data.append((display, ns, a6, up, pj))
 
     return date_range, poc_rows, poc_total, pod_data
@@ -223,11 +223,11 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
         c2.font = Font(name='Calibri', size=12); c2.fill = fill_w; c2.border = bdr
         c2.alignment = Alignment(horizontal='center', vertical='center')
 
-        rounded_total = round(total / 1000) * 1000
+        rounded_total = int(round(total / 1000) * 1000)
         c3 = ws.cell(row=row, column=PCOL+2, value=rounded_total)
         c3.font = Font(name='Calibri', size=12); c3.fill = fill_w; c3.border = bdr
         c3.alignment = Alignment(horizontal='center', vertical='center')
-        c3.number_format = CURR
+        c3.number_format = '$#,##0'
 
         # Check if next row is a different group or end — write subtotal
         next_group = rows_list[i+1][0] if i+1 < len(rows_list) else None
@@ -242,8 +242,8 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
                 c.border = bdr
                 c.alignment = Alignment(horizontal='left' if ci == 0 else 'center', vertical='center')
             ws.cell(row=row, column=PCOL).value = f'{found} — Subtotal'
-            ws.cell(row=row, column=PCOL+2).value = round(subtotal / 1000) * 1000
-            ws.cell(row=row, column=PCOL+2).number_format = CURR
+            ws.cell(row=row, column=PCOL+2).value = int(round(subtotal / 1000) * 1000)
+            ws.cell(row=row, column=PCOL+2).number_format = '$#,##0'
             row += 1  # blank gap between groups
             ws.row_dimensions[row].height = 8
             row += 1
@@ -260,8 +260,8 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
         c.border = bdr
         c.alignment = Alignment(horizontal='left' if ci == 0 else 'center', vertical='center')
     ws.cell(row=row, column=PCOL).value = 'GRAND TOTAL'
-    ws.cell(row=row, column=PCOL+2).value = round(grand / 1000) * 1000
-    ws.cell(row=row, column=PCOL+2).number_format = CURR
+    ws.cell(row=row, column=PCOL+2).value = int(round(grand / 1000) * 1000)
+    ws.cell(row=row, column=PCOL+2).number_format = '$#,##0'
     return row
 
 
@@ -283,8 +283,8 @@ def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
 
     ws1 = wb.active
     ws1.title = 'StubHub'
-    pivot_rows = _write_stubhub_pivot(ws1, part1_df, start_row=1)
-    _write_part1_sheet(ws1, part1_df, start_row=pivot_rows + 3)
+    _write_stubhub_pivot(ws1, part1_df, start_row=1)
+    _write_part1_sheet(ws1, part1_df, start_row=1)
 
     ws2 = wb.create_sheet('Other Networks')
     _write_part2_sheet(ws2, date_range, poc_rows, poc_total, pod_data)
@@ -363,12 +363,12 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     for ri, (client, sales) in enumerate(poc_rows, 5):
         ws.row_dimensions[ri].height = 16
         _sc(ws, ri, 1, client, bg=WHITE)
-        _sc(ws, ri, 2, sales,  bg=WHITE, ha='center', fmt=CURR)
+        _sc(ws, ri, 2, sales,  bg=WHITE, ha='center', fmt='$#,##0')
 
     tr1 = 5 + len(poc_rows)
     ws.row_dimensions[tr1].height = 16
     _sc(ws, tr1, 1, 'TOTAL',    bg=DARK_BLUE, fg=WHITE, bold=True)
-    _sc(ws, tr1, 2, poc_total,  bg=DARK_BLUE, fg=WHITE, bold=True, ha='center', fmt=CURR)
+    _sc(ws, tr1, 2, poc_total,  bg=DARK_BLUE, fg=WHITE, bold=True, ha='center', fmt='$#,##0')
 
     gap = tr1 + 2
     ws.row_dimensions[gap].height = 24
@@ -390,7 +390,7 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
         _sc(ws, ri, 2, ns, bg=WHITE, ha='center', fmt=CURR)
         _sc(ws, ri, 3, a6, bg=WHITE, ha='center', fmt=CURR)
         _sc(ws, ri, 4, up, bg=WHITE, ha='center', fmt=CURR)
-        _sc(ws, ri, 5, pj, bg=WHITE, ha='center', fmt=CURR)
+        _sc(ws, ri, 5, pj, bg=WHITE, ha='center', fmt='$#,##0')
 
     tr2 = hdr + 1 + len(pod_data)
     ws.row_dimensions[tr2].height = 16
