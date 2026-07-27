@@ -35,7 +35,7 @@ def _thin_border():
     return Border(left=t, right=t, top=t, bottom=t)
 
 
-def _sc(ws, r, c, val=None, bg=WHITE, fg='000000', bold=False, sz=10,
+def _sc(ws, r, c, val=None, bg=WHITE, fg='000000', bold=False, sz=12,
         ha='left', fmt=None, wrap=False, merge_to=None):
     bdr = _thin_border()
     cell = ws.cell(row=r, column=c, value=val)
@@ -213,18 +213,19 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
             current_group = found
             group_start = row
 
-        fill = PatternFill('solid', start_color='E2EFDA') if found == 'Yes' else PatternFill('solid', start_color='FCE4D6')
+        fill_w = PatternFill('solid', start_color=WHITE)
 
         c1 = ws.cell(row=row, column=PCOL, value=found)
-        c1.font = Font(name='Calibri', size=12); c1.fill = fill; c1.border = bdr
+        c1.font = Font(name='Calibri', size=12); c1.fill = fill_w; c1.border = bdr
         c1.alignment = Alignment(horizontal='center', vertical='center')
 
         c2 = ws.cell(row=row, column=PCOL+1, value=pdate)
-        c2.font = Font(name='Calibri', size=12); c2.fill = fill; c2.border = bdr
+        c2.font = Font(name='Calibri', size=12); c2.fill = fill_w; c2.border = bdr
         c2.alignment = Alignment(horizontal='center', vertical='center')
 
-        c3 = ws.cell(row=row, column=PCOL+2, value=total)
-        c3.font = Font(name='Calibri', size=12); c3.fill = fill; c3.border = bdr
+        rounded_total = round(total / 1000) * 1000
+        c3 = ws.cell(row=row, column=PCOL+2, value=rounded_total)
+        c3.font = Font(name='Calibri', size=12); c3.fill = fill_w; c3.border = bdr
         c3.alignment = Alignment(horizontal='center', vertical='center')
         c3.number_format = CURR
 
@@ -241,7 +242,7 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
                 c.border = bdr
                 c.alignment = Alignment(horizontal='left' if ci == 0 else 'center', vertical='center')
             ws.cell(row=row, column=PCOL).value = f'{found} — Subtotal'
-            ws.cell(row=row, column=PCOL+2).value = subtotal
+            ws.cell(row=row, column=PCOL+2).value = round(subtotal / 1000) * 1000
             ws.cell(row=row, column=PCOL+2).number_format = CURR
             row += 1  # blank gap between groups
             ws.row_dimensions[row].height = 8
@@ -252,17 +253,16 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
     # Grand total
     ws.row_dimensions[row].height = 16
     grand = df['Total'].sum()
-    for ci in range(1, 4):
-        c = ws.cell(row=row, column=ci)
+    for ci, col in enumerate([PCOL, PCOL+1, PCOL+2], 0):
+        c = ws.cell(row=row, column=col)
         c.font   = Font(name='Calibri', bold=True, color=WHITE, size=12)
         c.fill   = PatternFill('solid', start_color=MID_BLUE)
         c.border = bdr
-        c.alignment = Alignment(horizontal='center' if ci > 1 else 'left', vertical='center')
-    ws.cell(row=row, column=1).value = 'GRAND TOTAL'
-    ws.cell(row=row, column=3).value = grand
-    ws.cell(row=row, column=3).number_format = CURR
-
-    ws.freeze_panes = 'A2'
+        c.alignment = Alignment(horizontal='left' if ci == 0 else 'center', vertical='center')
+    ws.cell(row=row, column=PCOL).value = 'GRAND TOTAL'
+    ws.cell(row=row, column=PCOL+2).value = round(grand / 1000) * 1000
+    ws.cell(row=row, column=PCOL+2).number_format = CURR
+    return row
 
 
 def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
@@ -283,8 +283,8 @@ def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
 
     ws1 = wb.active
     ws1.title = 'StubHub'
-    detail_rows = _write_part1_sheet(ws1, part1_df)
-    _write_stubhub_pivot(ws1, part1_df, start_row=detail_rows + 3)
+    pivot_rows = _write_stubhub_pivot(ws1, part1_df, start_row=1)
+    _write_part1_sheet(ws1, part1_df, start_row=pivot_rows + 3)
 
     ws2 = wb.create_sheet('Other Networks')
     _write_part2_sheet(ws2, date_range, poc_rows, poc_total, pod_data)
@@ -296,13 +296,14 @@ def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
     return buf.getvalue(), filename
 
 
-def _write_part1_sheet(ws, df: pd.DataFrame):
+def _write_part1_sheet(ws, df: pd.DataFrame, start_row: int = 1):
     bdr = _thin_border()
     hdr_cols = df.columns.tolist()
     display_headers = [COL_DISPLAY.get(c, c) for c in hdr_cols]
 
+    hdr_row = start_row
     for col_idx, display_name in enumerate(display_headers, 1):
-        c = ws.cell(row=1, column=col_idx, value=display_name)
+        c = ws.cell(row=hdr_row, column=col_idx, value=display_name)
         c.font      = Font(name='Calibri', bold=True, color=WHITE, size=12)
         c.fill      = PatternFill('solid', start_color=DARK_BLUE)
         c.alignment = Alignment(horizontal='center', vertical='center')
@@ -313,7 +314,7 @@ def _write_part1_sheet(ws, df: pd.DataFrame):
     fill_no  = PatternFill('solid', start_color='FCE4D6')
     data_fnt = Font(name='Calibri', size=12)
 
-    for row_idx, row in enumerate(df.itertuples(index=False), 2):
+    for row_idx, row in enumerate(df.itertuples(index=False), start_row + 1):
         base_fill = fill_b
         for col_idx, value in enumerate(row, 1):
             c = ws.cell(row=row_idx, column=col_idx, value=value)
@@ -336,9 +337,9 @@ def _write_part1_sheet(ws, df: pd.DataFrame):
         max_len  = max(len(display_name), data_max)
         ws.column_dimensions[get_column_letter(col_idx)].width = min(max_len + 4, 55)
 
-    ws.row_dimensions[1].height = 20
-    ws.freeze_panes = 'A2'
-    return 1 + len(df)
+    ws.row_dimensions[hdr_row].height = 20
+    ws.freeze_panes = f'A{start_row + 1}'
+    return start_row + len(df)
 
 
 def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
@@ -351,7 +352,7 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
 
     ws.row_dimensions[2].height = 24
     _sc(ws, 2, 1, 'Pay on Confirmation',
-        bg=DARK_BLUE, fg=WHITE, bold=True, sz=11, merge_to=5)
+        bg=DARK_BLUE, fg=WHITE, bold=True, sz=12, merge_to=5)
     ws.row_dimensions[3].height = 13
     _sc(ws, 3, 1, 'Gametime - TickPick - SeatGeek',
         fg='777777', sz=9, merge_to=2)
@@ -372,7 +373,7 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     gap = tr1 + 2
     ws.row_dimensions[gap].height = 24
     _sc(ws, gap, 1, 'Pay on Delivery',
-        bg=DARK_BLUE, fg=WHITE, bold=True, sz=11, merge_to=5)
+        bg=DARK_BLUE, fg=WHITE, bold=True, sz=12, merge_to=5)
     ws.row_dimensions[gap + 1].height = 13
     _sc(ws, gap + 1, 1, 'Vivid Seats - GoTickets - TicketNetwork - TicketMaster',
         fg='777777', sz=9, merge_to=5)
