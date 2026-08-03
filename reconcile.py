@@ -114,7 +114,7 @@ def build_part1_df(csv_files: dict, matched: dict, invoice_bytes: bytes) -> pd.D
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
         df['Total'] = df['Proceeds'] + df['Charges'] + df['Credit']
         dt = pd.to_datetime(date, format='%d/%m/%Y')
-        df['PaymentDate'] = dt.strftime('%d/%m/%Y')
+        df['PaymentDate'] = dt.strftime('%-m/%-d/%Y')
         df['DayOfWeek']   = dt.strftime('%A')
         df = df.drop(columns=['Venue', 'Proceeds', 'Charges', 'Credit'], errors='ignore')
         dfs.append(df)
@@ -142,8 +142,8 @@ def build_part2_data(inv_det_bytes: bytes, inv_bytes: bytes):
     inv     = inv[inv['Client'].isin(POD_CLIENTS)].copy()
 
     inv_det['Created Date'] = pd.to_datetime(inv_det['Created Date'])
-    date_min   = inv_det['Created Date'].min().strftime('%b %-d, %Y')
-    date_max   = inv_det['Created Date'].max().strftime('%b %-d, %Y')
+    date_min   = inv_det['Created Date'].min().strftime('%-m/%-d/%Y')
+    date_max   = inv_det['Created Date'].max().strftime('%-m/%-d/%Y')
     date_range = f'{date_min} - {date_max}'
 
     poc_sales = inv_det[inv_det['Client'].isin(POC_CLIENTS)].groupby('Client')['Total Price'].sum()
@@ -182,7 +182,7 @@ def _write_stubhub_pivot(ws, df: pd.DataFrame, start_row: int = 2):
 
     # Sort: Yes first, then No; within each group sort by date
     pivot['_sort'] = pivot['Found in Y&S'].map({'Yes': 0, 'No': 1})
-    pivot['_date'] = pd.to_datetime(pivot['Payment Date'], format='%d/%m/%Y')
+    pivot['_date'] = pd.to_datetime(pivot['Payment Date'], format='mixed')
     pivot = pivot.sort_values(['_sort', '_date']).drop(columns=['_sort', '_date'])
 
     # Place pivot header in column J onwards (col 10) to avoid overlapping detail
@@ -273,8 +273,8 @@ def write_combined_xlsx(part1_df: pd.DataFrame, part2_data: tuple) -> tuple:
     # date_range like "May 4, 2026 - May 10, 2026"
     try:
         parts = date_range.split(' - ')
-        d1 = pd.to_datetime(parts[0]).strftime('%b %-d')
-        d2 = pd.to_datetime(parts[1]).strftime('%b %-d')
+        d1 = pd.to_datetime(parts[0]).strftime('%-m-%-d')
+        d2 = pd.to_datetime(parts[1]).strftime('%-m-%-d')
         filename = f'Cash Inflow Projection {d1} thru {d2}.xlsx'
     except Exception:
         filename = 'Cash Inflow Projection.xlsx'
