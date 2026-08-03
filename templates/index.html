@@ -8,119 +8,91 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', sans-serif; background: #f6f7f9; color: #1a1f2e; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f6f7f9; color: #1a1f2e; }
     .app { max-width: 780px; margin: 0 auto; padding: 32px 24px 60px; }
-    .app-header { margin-bottom: 36px; padding-bottom: 24px; border-bottom: 1px solid #e2e6ee; }
-    .app-header h1 { font-size: 20px; font-weight: 600; color: #1a1f2e; letter-spacing: -0.3px; margin-bottom: 4px; }
-    .app-header p { font-size: 13px; color: #6b7280; }
-    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; margin-top: 32px; }
-    .section-pill { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; background: #1F4E79; color: #fff; padding: 3px 10px; border-radius: 20px; }
-    .section-pill.p2 { background: #2d6a4f; }
-    .section-title { font-size: 14px; font-weight: 600; color: #1a1f2e; }
-    .card { background: #fff; border: 1px solid #e2e6ee; border-radius: 10px; padding: 20px; margin-bottom: 10px; }
-    .card-label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-    .card-label i { font-size: 14px; color: #9ca3af; }
 
-    /* Screenshot drop zone */
-    .drop-zone {
-      border: 2px dashed #c5d8ec; border-radius: 8px; padding: 28px 20px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; cursor: pointer; transition: all 0.15s; position: relative;
-      background: #f8fafd; min-height: 110px; text-align: center;
-    }
+    .app-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #e2e6ee; }
+    .app-header h1 { font-size: 20px; font-weight: 600; color: #1a1f2e; letter-spacing: -0.3px; }
+
+    .section-header { display: flex; align-items: center; gap: 8px; margin: 24px 0 12px; }
+    .pill { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; background: #1F4E79; color: #fff; padding: 3px 10px; border-radius: 20px; }
+    .pill.p2 { background: #2d6a4f; }
+    .sec-title { font-size: 14px; font-weight: 600; color: #1a1f2e; }
+
+    .card { background: #fff; border: 1px solid #e2e6ee; border-radius: 10px; padding: 18px 20px; margin-bottom: 10px; }
+    .card-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+    .card-label i { font-size: 13px; }
+
+    /* ── Screenshot drop zone ── */
+    .drop-zone { border: 2px dashed #c5d8ec; border-radius: 8px; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all .15s; position: relative; background: #f8fafd; min-height: 100px; text-align: center; }
     .drop-zone:hover, .drop-zone.dragover { border-color: #1F4E79; background: #eff5fb; }
     .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-    .drop-zone .dz-icon { font-size: 28px; color: #1F4E79; opacity: 0.6; }
-    .drop-zone .dz-title { font-size: 14px; font-weight: 500; color: #374151; }
-    .drop-zone .dz-hint  { font-size: 12px; color: #9ca3af; }
-    .drop-zone.has-file  { border-style: solid; border-color: #1F4E79; background: #eff5fb; }
+    .drop-zone .dz-icon { font-size: 26px; color: #1F4E79; opacity: .5; }
+    .drop-zone .dz-title { font-size: 13px; font-weight: 500; color: #374151; }
+    .drop-zone .dz-hint { font-size: 11px; color: #9ca3af; }
+    .drop-zone.has-file { border-style: solid; border-color: #1F4E79; background: #eff5fb; }
+    .drop-zone .dz-default { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .drop-zone .dz-preview { display: none; flex-direction: column; align-items: center; gap: 6px; }
     .drop-zone.has-file .dz-default { display: none; }
     .drop-zone.has-file .dz-preview { display: flex; }
     .drop-zone.has-file #dz-clear { display: flex; }
-    .dz-thumb { max-width: 180px; max-height: 100px; border-radius: 4px; object-fit: contain; border: 1px solid #c5d8ec; }
+    .dz-thumb { max-width: 160px; max-height: 80px; border-radius: 4px; object-fit: contain; border: 1px solid #c5d8ec; }
     .dz-fname { font-size: 11px; font-family: 'DM Mono', monospace; color: #1F4E79; }
 
-    /* Extracted rows preview */
+    /* ── Generic file upload zone ── */
+    .fu { position: relative; border: 1.5px dashed #c8d0dc; border-radius: 8px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: border-color .15s, background .15s; background: #f8f9fb; text-align: center; min-height: 76px; }
+    .fu:hover { border-color: #2E75B6; background: #eff5fb; }
+    .fu.dragover { border-color: #2E75B6 !important; background: #eff5fb !important; }
+    .fu.has-file { border-color: #2E75B6; border-style: solid; background: #eff5fb; }
+    .fu input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: calc(100% - 70px); height: 100%; }
+    .fu-main { font-size: 13px; font-weight: 500; color: #374151; pointer-events: none; }
+    .fu-main span { color: #2E75B6; text-decoration: underline; }
+    .fu-hint { font-size: 12px; color: #9ca3af; pointer-events: none; transition: color .15s; }
+    .fu-hint.selected { color: #1F4E79; font-weight: 500; }
+    .fu-clear { display: none; position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 500; color: #991b1b; background: #fff; border: 1px solid #fecaca; border-radius: 6px; padding: 3px 10px; cursor: pointer; z-index: 20; pointer-events: all; align-items: center; gap: 4px; transition: all .12s; }
+    .fu-clear:hover { background: #fef2f2; border-color: #f87171; }
+    .fu.has-file .fu-clear { display: flex; }
+
+    /* ── Extracted rows ── */
     .extracted-rows { margin-top: 12px; display: none; }
     .extracted-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .extracted-header span { font-size: 12px; font-weight: 600; color: #374151; }
-    .btn-reextract { font-size: 11px; color: #6b7280; background: none; border: 1px solid #e5e7eb; border-radius: 5px; padding: 3px 10px; cursor: pointer; transition: all 0.12s; }
-    .btn-reextract:hover { border-color: #1F4E79; color: #1F4E79; }
-    .rows-table-wrap { overflow-x: auto; }
-    .rows-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .rows-table th { background: #f3f4f6; color: #6b7280; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-    .rows-table td { padding: 5px 8px; border-bottom: 1px solid #f3f4f6; font-family: 'DM Mono', monospace; color: #374151; }
-    .rows-table tr:last-child td { border-bottom: none; }
-    .rows-table tr:hover td { background: #fafbfc; }
+    .btn-sm { font-size: 11px; color: #6b7280; background: none; border: 1px solid #e5e7eb; border-radius: 5px; padding: 3px 10px; cursor: pointer; transition: all .12s; }
+    .btn-sm:hover { border-color: #1F4E79; color: #1F4E79; }
+    .rtbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .rtbl th { background: #f3f4f6; color: #6b7280; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; padding: 6px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .rtbl td { padding: 5px 8px; border-bottom: 1px solid #f3f4f6; font-family: 'DM Mono', monospace; font-size: 11px; color: #374151; }
+    .rtbl tr:last-child td { border-bottom: none; }
 
-    /* File upload (generic) */
-
-    .file-upload {
-      position: relative;
-      border: 1.5px dashed #c8d0dc;
-      border-radius: 8px;
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      background: #f8f9fb;
-      text-align: center;
-      min-height: 80px;
-    }
-    .file-upload .fu-main { font-size: 13px; font-weight: 500; color: #374151; }
-    .file-upload .fu-main a { color: #1F4E79; text-decoration: underline; }
-    .file-upload .fu-hint { font-size: 12px; color: #9ca3af; }
-    .fu-clear { display: none; position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 500; color: #991b1b; background: #fff; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 10px; cursor: pointer; z-index: 20; pointer-events: all; transition: all .12s; display: none; align-items: center; gap: 4px; }
-    .fu-clear:hover { background: #fef2f2; border-color: #f87171; }
-    .file-upload.has-file .fu-clear { display: flex; }
-    .file-upload { border: 1.5px dashed #d1d5db; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; }
-    .file-name { font-size: 11px; color: #1F4E79; font-family: 'DM Mono', monospace; margin-top: 6px; display: none; }
-
-    /* Match preview */
-    .match-btn { font-size: 12px; font-weight: 500; color: #1F4E79; background: #eff5fb; border: 1px solid #c5d8ec; border-radius: 6px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.12s; margin-top: 12px; }
+    /* ── Match preview ── */
+    .match-btn { font-size: 12px; font-weight: 500; color: #1F4E79; background: #eff5fb; border: 1px solid #c5d8ec; border-radius: 6px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 10px; width: fit-content; transition: background .12s; }
     .match-btn:hover { background: #dceaf6; }
-    .match-btn i { font-size: 14px; }
-    .match-grid { display: none; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .match-item { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; font-size: 11px; }
-    .match-item .pid { font-weight: 600; color: #1F4E79; font-family: 'DM Mono', monospace; }
-    .match-item .mfile { color: #6b7280; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .match-item .mdate { color: #9ca3af; margin-top: 1px; }
+    .match-grid { display: none; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+    .match-grid.show { display: grid; }
+    .mi { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; font-size: 11px; }
+    .mi .pid { font-weight: 600; color: #1F4E79; font-family: 'DM Mono', monospace; }
+    .mi .mf  { color: #6b7280; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mi .md  { color: #9ca3af; margin-top: 1px; }
 
-    /* Buttons */
-    .btn-ghost { font-size: 12px; font-weight: 500; color: #6b7280; background: none; border: 1px solid #e5e7eb; border-radius: 6px; padding: 5px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.12s; }
-    .btn-ghost:hover { border-color: #1F4E79; color: #1F4E79; background: #f0f5fb; }
-    .btn-ghost i { font-size: 13px; }
+    /* ── Status ── */
+    .status { border-radius: 7px; padding: 9px 12px; font-size: 12px; margin-top: 10px; display: none; align-items: center; gap: 8px; }
+    .status i { font-size: 14px; flex-shrink: 0; }
+    .s-info    { background: #eff5fb; color: #1F4E79; border: 1px solid #c5d8ec; display: flex; }
+    .s-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: flex; }
+    .s-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: flex; }
+    .s-warn    { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; display: flex; }
 
-    .divider { height: 1px; background: #e2e6ee; margin: 28px 0; }
-
-    .btn-generate:hover { background: #174069 !important; }
-    .btn-generate:active { transform: scale(0.97); }
-
-    /* Status */
-    .status { border-radius: 7px; padding: 10px 14px; font-size: 12px; margin-top: 12px; display: none; align-items: center; gap: 8px; }
-    .status i { font-size: 15px; flex-shrink: 0; }
-    .status.info    { background: #eff5fb; color: #1F4E79; border: 1px solid #c5d8ec; display: flex; }
-    .status.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: flex; }
-    .status.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: flex; }
-    .status.warn    { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; display: flex; }
-
-    .spinner { width: 13px; height: 13px; border: 2px solid rgba(31,78,121,0.2); border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    .spinner { width: 12px; height: 12px; border: 1.5px solid rgba(31,78,121,.2); border-top-color: #1F4E79; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .zone-clear { position: absolute; top: 6px; right: 6px; font-size: 10px; font-weight: 500; color: #6b7280; background: rgba(255,255,255,0.85); border: 0.5px solid #e5e7eb; border-radius: 4px; padding: 2px 8px; cursor: pointer; display: none; z-index: 10; transition: all .12s; }
-    .zone-clear:hover { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
-    .file-row { position: relative; }
-    .file-row .zone-clear { display: none; }
-    .file-row.done .zone-clear { display: block; }
-    .dropzone.done .zone-clear { display: block; }
-    .btn-clear { font-size: 12px; font-weight: 500; color: #991b1b; background: none; border: 1px solid #fecaca; border-radius: 6px; padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.12s; }
-    .btn-clear:hover { background: #fef2f2; border-color: #f87171; }
-    .btn-clear i { font-size: 14px; }
+    /* ── Bottom buttons ── */
+    .divider { height: 1px; background: #e2e6ee; margin: 24px 0; }
+    .bottom-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
+    .btn-clear-all { font-size: 12px; font-weight: 500; color: #991b1b; background: none; border: 1px solid #fecaca; border-radius: 6px; padding: 7px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all .12s; }
+    .btn-clear-all:hover { background: #fef2f2; }
+    .btn-generate { background: #1F4E79; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; transition: background .12s, transform .1s; }
+    .btn-generate:hover { background: #174069; }
+    .btn-generate:active { transform: scale(.97); }
   </style>
 </head>
 <body>
@@ -128,92 +100,73 @@
 
   <div class="app-header">
     <h1>Weekly Cash Inflow Projections</h1>
-
   </div>
 
   <!-- PART 1 -->
   <div class="section-header">
-    <span class="section-pill">Part 1</span>
-    <span class="section-title">StubHub</span>
+    <span class="pill">Part 1</span>
+    <span class="sec-title">StubHub</span>
   </div>
 
-  <!-- Screenshot drop zone -->
+  <!-- Screenshot -->
   <div class="card">
-    <div class="card-label"><i class="ti ti-screenshot" aria-hidden="true"></i> StubHub portal screenshot</div>
-    <div class="drop-zone" id="screenshot-zone" style="position:relative;">
+    <div class="card-label"><i class="ti ti-screenshot"></i> StubHub portal screenshot</div>
+    <div class="drop-zone" id="screenshot-zone">
       <input type="file" id="screenshot-input" accept="image/*" onchange="onScreenshotSelected(this)"/>
+      <button class="fu-clear" id="dz-clear" onclick="clearScreenshot(event)" style="display:none;position:absolute;top:8px;right:8px;font-size:11px;font-weight:500;color:#991b1b;background:#fff;border:1px solid #fecaca;border-radius:6px;padding:3px 10px;cursor:pointer;z-index:20;pointer-events:all;align-items:center;gap:4px;">
+        <i class="ti ti-trash"></i> Clear
+      </button>
       <div class="dz-default">
-        <i class="ti ti-photo-up dz-icon" aria-hidden="true"></i>
+        <i class="ti ti-photo-up dz-icon"></i>
         <div class="dz-title">Drag &amp; drop your StubHub screenshot here</div>
         <div class="dz-hint">or click to browse &nbsp;·&nbsp; PNG, JPG, WEBP</div>
       </div>
-      <button class="fu-clear" id="dz-clear" onclick="clearScreenshot(event)" style="position:absolute;top:8px;right:8px;"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
       <div class="dz-preview">
-        <img id="dz-thumb" class="dz-thumb" src="" alt="Screenshot preview"/>
+        <img id="dz-thumb" class="dz-thumb" src="" alt="preview"/>
         <div id="dz-fname" class="dz-fname"></div>
       </div>
     </div>
-    <div id="extract-status" class="status" style="display:none;"></div>
-
-    <!-- Extracted rows table -->
+    <div id="extract-status" class="status"></div>
     <div class="extracted-rows" id="extracted-rows">
       <div class="extracted-header">
         <span id="extracted-count"></span>
-        <button class="btn-reextract" onclick="extractFromScreenshot()">Re-extract</button>
+        <button class="btn-sm" onclick="extractFromScreenshot()">Re-extract</button>
       </div>
-      <div class="rows-table-wrap">
-        <table class="rows-table">
-          <thead>
-            <tr><th>Payment ID</th><th>Date</th><th>Proceeds</th><th>Charges</th><th>Credit</th></tr>
-          </thead>
+      <div style="overflow-x:auto;">
+        <table class="rtbl">
+          <thead><tr><th>Payment ID</th><th>Date</th><th>Proceeds</th><th>Charges</th><th>Credit</th></tr></thead>
           <tbody id="extracted-body"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- Viagogo CSVs -->
+  <!-- CSV files -->
   <div class="card">
-    <div class="card-label"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> StubHub Portal CSV Files</div>
-        <div class="file-upload" id="fu-csv"
-         ondragover="fuDragOver(event,'fu-csv')"
-         ondragleave="fuDragLeave('fu-csv')"
-         ondrop="fuDrop(event,'fu-csv','csv-files','csv-fname')">
+    <div class="card-label"><i class="ti ti-file-spreadsheet"></i> StubHub Portal CSV Files</div>
+    <div class="fu" id="fu-csv"
+         ondragover="fuDragOver(event,'fu-csv')" ondragleave="fuDragLeave('fu-csv')" ondrop="fuDrop(event,'fu-csv','csv-files','csv-fname')">
       <input type="file" id="csv-files" multiple accept=".csv" onchange="showFileName('csv-files','csv-fname','fu-csv')"/>
-      <div class="fu-main">Drag &amp; drop or <a>browse</a></div>
+      <div class="fu-main">Drag &amp; drop or <span>browse</span></div>
       <div class="fu-hint" id="csv-fname">One or more .csv files</div>
-      <button class="fu-clear" onclick="clearUpload('csv-files','csv-fname','fu-csv',event,'fuel-csv')"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
-    </div>
-      <div class="file-upload-text">
-        <strong>Select all Viagogo CSV files</strong>
-        <span>Hold Shift or Cmd/Ctrl to select multiple</span>
-      </div>
-      <button class="fu-clear" onclick="clearUpload('csv-files','csv-fname','fu-csv',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
+      <button class="fu-clear" onclick="clearUpload('csv-files','csv-fname','fu-csv',event,'One or more .csv files')"><i class="ti ti-trash"></i> Clear</button>
     </div>
     <button class="match-btn" onclick="matchFiles()">
-      <i class="ti ti-refresh" aria-hidden="true"></i> Preview file matches
+      <i class="ti ti-refresh"></i> Preview file matches
     </button>
-    <div id="match-status" class="status" style="display:none;"></div>
-    <div id="match-results" class="match-grid" style="display:none;"></div>
+    <div id="match-status" class="status"></div>
+    <div id="match-results" class="match-grid"></div>
   </div>
 
   <!-- StubHub invoice -->
   <div class="card">
-    <div class="card-label"><i class="ti ti-file-invoice" aria-hidden="true"></i> StubHub Invoice Details (TicketVault)</div>
-        <div class="file-upload" id="fu-sb"
-         ondragover="fuDragOver(event,'fu-sb')"
-         ondragleave="fuDragLeave('fu-sb')"
-         ondrop="fuDrop(event,'fu-sb','stubhub-invoice','sb-fname')">
+    <div class="card-label"><i class="ti ti-file-invoice"></i> StubHub Invoice Details (TicketVault)</div>
+    <div class="fu" id="fu-sb"
+         ondragover="fuDragOver(event,'fu-sb')" ondragleave="fuDragLeave('fu-sb')" ondrop="fuDrop(event,'fu-sb','stubhub-invoice','sb-fname')">
       <input type="file" id="stubhub-invoice" accept=".xlsx" onchange="showFileName('stubhub-invoice','sb-fname','fu-sb')"/>
-      <div class="fu-main">Drag &amp; drop or <a>browse</a></div>
+      <div class="fu-main">Drag &amp; drop or <span>browse</span></div>
       <div class="fu-hint" id="sb-fname">.xlsx file</div>
-      <button class="fu-clear" onclick="clearUpload('stubhub-invoice','sb-fname','fu-sb',event,'fuel-sb')"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
-    </div>
-      <div class="file-upload-text">
-        <strong>Invoice Details Report .xlsx</strong>
-        <span>Used to match TransactionIDs</span>
-      </div>
-      <button class="fu-clear" onclick="clearUpload('stubhub-invoice','sb-fname','fu-sb',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
+      <button class="fu-clear" onclick="clearUpload('stubhub-invoice','sb-fname','fu-sb',event,'.xlsx file')"><i class="ti ti-trash"></i> Clear</button>
     </div>
   </div>
 
@@ -221,71 +174,52 @@
 
   <!-- PART 2 -->
   <div class="section-header">
-    <span class="section-pill p2">Part 2</span>
-    <span class="section-title">Other Networks</span>
+    <span class="pill p2">Part 2</span>
+    <span class="sec-title">Other Networks</span>
   </div>
 
+  <!-- Invoice details -->
   <div class="card">
-    <div class="card-label"><i class="ti ti-calendar-week" aria-hidden="true"></i> Invoice Details — prior 7 invoice date days ending Sunday</div>
-        <div class="file-upload" id="fu-invdet"
-         ondragover="fuDragOver(event,'fu-invdet')"
-         ondragleave="fuDragLeave('fu-invdet')"
-         ondrop="fuDrop(event,'fu-invdet','inv-det-file','inv-det-fname')">
+    <div class="card-label"><i class="ti ti-calendar-week"></i> Invoice Details — prior 7 invoice date days ending Sunday</div>
+    <div class="fu" id="fu-invdet"
+         ondragover="fuDragOver(event,'fu-invdet')" ondragleave="fuDragLeave('fu-invdet')" ondrop="fuDrop(event,'fu-invdet','inv-det-file','inv-det-fname')">
       <input type="file" id="inv-det-file" accept=".xlsx" onchange="showFileName('inv-det-file','inv-det-fname','fu-invdet')"/>
-      <div class="fu-main">Drag &amp; drop or <a>browse</a></div>
+      <div class="fu-main">Drag &amp; drop or <span>browse</span></div>
       <div class="fu-hint" id="inv-det-fname">.xlsx file</div>
-      <button class="fu-clear" onclick="clearUpload('inv-det-file','inv-det-fname','fu-invdet',event,'fuel-invdet')"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
-    </div>
-      <div class="file-upload-text">
-        <strong>Invoice Details Report .xlsx</strong>
-      </div>
-      <button class="fu-clear" onclick="clearUpload('inv-det-file','inv-det-fname','fu-invdet',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
+      <button class="fu-clear" onclick="clearUpload('inv-det-file','inv-det-fname','fu-invdet',event,'.xlsx file')"><i class="ti ti-trash"></i> Clear</button>
     </div>
   </div>
 
+  <!-- Invoices -->
   <div class="card">
-    <div class="card-label"><i class="ti ti-calendar-event" aria-hidden="true"></i> Invoices — prior 7 event date days ending Sunday</div>
-        <div class="file-upload" id="fu-inv"
-         ondragover="fuDragOver(event,'fu-inv')"
-         ondragleave="fuDragLeave('fu-inv')"
-         ondrop="fuDrop(event,'fu-inv','inv-file','inv-fname')">
+    <div class="card-label"><i class="ti ti-calendar-event"></i> Invoices — prior 7 event date days ending Sunday</div>
+    <div class="fu" id="fu-inv"
+         ondragover="fuDragOver(event,'fu-inv')" ondragleave="fuDragLeave('fu-inv')" ondrop="fuDrop(event,'fu-inv','inv-file','inv-fname')">
       <input type="file" id="inv-file" accept=".xlsx" onchange="showFileName('inv-file','inv-fname','fu-inv')"/>
-      <div class="fu-main">Drag &amp; drop or <a>browse</a></div>
+      <div class="fu-main">Drag &amp; drop or <span>browse</span></div>
       <div class="fu-hint" id="inv-fname">.xlsx file</div>
-      <button class="fu-clear" onclick="clearUpload('inv-file','inv-fname','fu-inv',event,'fuel-inv')"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
-    </div>
-      <div class="file-upload-text">
-        <strong>Unpaid Invoices Report .xlsx</strong>
-      </div>
-      <button class="fu-clear" onclick="clearUpload('inv-file','inv-fname','fu-inv',event)"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
+      <button class="fu-clear" onclick="clearUpload('inv-file','inv-fname','fu-inv',event,'.xlsx file')"><i class="ti ti-trash"></i> Clear</button>
     </div>
   </div>
 
-  <div style="display:flex; justify-content:flex-end; margin-top:20px;">
-    <button class="btn-clear" onclick="clearAll()">
-      <i class="ti ti-trash" aria-hidden="true"></i> Clear all
-    </button>
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <button class="btn-clear-all" onclick="clearAll()"><i class="ti ti-trash"></i> Clear all</button>
+    <button class="btn-generate" onclick="generate()"><i class="ti ti-download"></i> Generate report</button>
   </div>
-
-  <div style="display:flex; justify-content:center; margin-top:12px;">
-    <button class="btn-generate" onclick="generate()" style="background:#1F4E79;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;transition:background .12s,transform .1s;">
-      <i class="ti ti-download" aria-hidden="true"></i> Generate report
-    </button>
-  </div>
-  <div id="gen-status" class="status" style="display:none;margin-top:10px;"></div>
+  <div id="gen-status" class="status"></div>
 
 </div>
 
 <script>
 let extractedPayments = [];
 
-// ── Drag & drop ──────────────────────────────────────────────────────────────
+// Screenshot zone drag
 const zone = document.getElementById('screenshot-zone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
 zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.classList.remove('dragover');
+  e.preventDefault(); zone.classList.remove('dragover');
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) {
     document.getElementById('screenshot-input').files = e.dataTransfer.files;
@@ -301,6 +235,7 @@ function onScreenshotSelected(input, droppedFile) {
     document.getElementById('dz-thumb').src = e.target.result;
     document.getElementById('dz-fname').textContent = file.name;
     zone.classList.add('has-file');
+    document.getElementById('dz-clear').style.display = 'flex';
   };
   reader.readAsDataURL(file);
   extractFromScreenshot(file);
@@ -310,22 +245,17 @@ async function extractFromScreenshot(fileOverride) {
   const input = document.getElementById('screenshot-input');
   const file  = fileOverride || (input && input.files[0]);
   if (!file) { showStatus('extract-status', 'error', 'No screenshot selected.'); return; }
-
   document.getElementById('extracted-rows').style.display = 'none';
   showStatus('extract-status', 'info', 'Reading screenshot with Claude Vision…');
-
   const fd = new FormData();
   fd.append('screenshot', file);
-
   try {
     const res  = await fetch('/extract_payments', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.error) { showStatus('extract-status', 'error', data.error); return; }
-
     extractedPayments = data.rows || [];
     renderExtractedRows(extractedPayments);
-    showStatus('extract-status', 'success',
-      `Extracted ${extractedPayments.length} payment row${extractedPayments.length !== 1 ? 's' : ''} from screenshot.`);
+    showStatus('extract-status', 'success', `Extracted ${extractedPayments.length} payment row${extractedPayments.length !== 1 ? 's' : ''} from screenshot.`);
   } catch (e) {
     showStatus('extract-status', 'error', 'Request failed. Is the server running?');
   }
@@ -336,13 +266,7 @@ function renderExtractedRows(rows) {
   tbody.innerHTML = '';
   rows.forEach(r => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.payment_id}</td>
-      <td>${r.date}</td>
-      <td>${fmtNum(r.proceeds)}</td>
-      <td>${fmtNum(r.charges)}</td>
-      <td>${fmtNum(r.credit)}</td>
-    `;
+    tr.innerHTML = `<td>${r.payment_id}</td><td>${r.date}</td><td>${fmtNum(r.proceeds)}</td><td>${fmtNum(r.charges)}</td><td>${fmtNum(r.credit)}</td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('extracted-count').textContent = `${rows.length} payments extracted`;
@@ -350,37 +274,28 @@ function renderExtractedRows(rows) {
 }
 
 function fmtNum(n) {
-  if (n === 0 || n === null || n === undefined) return '$0.00';
+  if (!n) return '$0.00';
   return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// ── File labels ──────────────────────────────────────────────────────────────
 function showFileName(inputId, labelId, zoneId) {
   const inp = document.getElementById(inputId);
   const lbl = document.getElementById(labelId);
   if (!inp.files.length) return;
   const txt = inp.files.length === 1 ? inp.files[0].name : `${inp.files.length} files selected`;
-  if (lbl) { lbl.textContent = txt; lbl.style.color = '#1F4E79'; lbl.style.fontWeight = '500'; }
+  if (lbl) { lbl.textContent = txt; lbl.classList.add('selected'); }
   if (zoneId) document.getElementById(zoneId).classList.add('has-file');
 }
 
-function fuDragOver(e, zoneId) {
-  e.preventDefault();
-  document.getElementById(zoneId).classList.add('dragover');
-}
-
-function fuDragLeave(zoneId) {
-  document.getElementById(zoneId).classList.remove('dragover');
-}
+function fuDragOver(e, zoneId) { e.preventDefault(); document.getElementById(zoneId).classList.add('dragover'); }
+function fuDragLeave(zoneId)   { document.getElementById(zoneId).classList.remove('dragover'); }
 
 function fuDrop(e, zoneId, inputId, labelId) {
-  e.preventDefault();
-  e.stopPropagation();
-  const zone = document.getElementById(zoneId);
-  zone.classList.remove('dragover');
+  e.preventDefault(); e.stopPropagation();
+  const z = document.getElementById(zoneId);
+  z.classList.remove('dragover');
   const files = e.dataTransfer.files;
   if (!files.length) return;
-  // Assign dropped files to the input
   const inp = document.getElementById(inputId);
   const dt = new DataTransfer();
   Array.from(files).forEach(f => dt.items.add(f));
@@ -388,152 +303,110 @@ function fuDrop(e, zoneId, inputId, labelId) {
   showFileName(inputId, labelId, zoneId);
 }
 
-function clearUpload(inputId, labelId, zoneId, e) {
+function clearUpload(inputId, labelId, zoneId, e, defaultHint) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
-  const inp = document.getElementById(inputId);
-  inp.value = '';
-  const hintMap = {'csv-fname':'One or more .csv files','sb-fname':'.xlsx file','inv-det-fname':'.xlsx file','inv-fname':'.xlsx file'};
+  document.getElementById(inputId).value = '';
   const lbl = document.getElementById(labelId);
-  if (lbl) { lbl.textContent = hintMap[labelId] || ''; lbl.style.color = ''; lbl.style.fontWeight = ''; }
-  const zone = document.getElementById(zoneId);
-  if (zone) zone.classList.remove('has-file', 'dragover');
+  if (lbl) { lbl.textContent = defaultHint || ''; lbl.classList.remove('selected'); }
+  document.getElementById(zoneId).classList.remove('has-file', 'dragover');
 }
 
-// ── Match preview ─────────────────────────────────────────────────────────────
 async function matchFiles() {
-  const csvInput  = document.getElementById('csv-files');
+  const csvInput = document.getElementById('csv-files');
   const resultsEl = document.getElementById('match-results');
-  if (!csvInput.files.length) { showStatus('match-status','error','Select Viagogo CSV files first.'); return; }
-  if (!extractedPayments.length) { showStatus('match-status','error','Upload the portal screenshot first so payments can be extracted.'); return; }
-
+  if (!csvInput.files.length) { showStatus('match-status','error','Select CSV files first.'); return; }
+  if (!extractedPayments.length) { showStatus('match-status','error','Upload the portal screenshot first.'); return; }
   showStatus('match-status', 'info', 'Matching files…');
-  resultsEl.innerHTML = ''; resultsEl.style.display = 'none';
-
+  resultsEl.innerHTML = ''; resultsEl.classList.remove('show');
   const fd = new FormData();
   for (const f of csvInput.files) fd.append('csv_files', f);
   fd.append('payments', JSON.stringify(extractedPayments));
-
   try {
     const res  = await fetch('/match', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.error) { showStatus('match-status','error',data.error); return; }
-
     const matched = data.matched || {}, unF = data.unmatched_files || [], unP = data.unmatched_payments || [];
     let html = '';
     for (const [pid, info] of Object.entries(matched))
-      html += `<div class="match-item"><div class="pid">${pid}</div><div class="mfile">📄 ${info.file}</div><div class="mdate">📅 ${info.date}</div></div>`;
-    unP.forEach(p => { html += `<div class="match-item" style="border-color:#fde68a;background:#fffbeb"><div class="pid" style="color:#92400e">⚠ ${p}</div><div class="mfile">No CSV found</div></div>`; });
-    unF.forEach(f => { html += `<div class="match-item" style="border-color:#fde68a;background:#fffbeb"><div class="pid" style="color:#92400e">⚠ Unmatched</div><div class="mfile">${f}</div></div>`; });
-
-    if (html) { resultsEl.innerHTML = html; resultsEl.style.display = 'grid'; }
+      html += `<div class="mi"><div class="pid">${pid}</div><div class="mf">📄 ${info.file}</div><div class="md">📅 ${info.date}</div></div>`;
+    unP.forEach(p => { html += `<div class="mi" style="border-color:#fde68a;background:#fffbeb"><div class="pid" style="color:#92400e">⚠ ${p}</div><div class="mf">No CSV found</div></div>`; });
+    unF.forEach(f => { html += `<div class="mi" style="border-color:#fde68a;background:#fffbeb"><div class="pid" style="color:#92400e">⚠ Unmatched</div><div class="mf">${f}</div></div>`; });
+    if (html) { resultsEl.innerHTML = html; resultsEl.classList.add('show'); }
     const type = (unP.length || unF.length) ? 'warn' : 'success';
-    const msg  = `Matched ${Object.keys(matched).length} of ${extractedPayments.length} payments.`
-      + (unP.length ? ` ${unP.length} payment(s) unmatched.` : '')
-      + (unF.length ? ` ${unF.length} file(s) unmatched.` : '');
+    const msg = `Matched ${Object.keys(matched).length} of ${extractedPayments.length} payments.`
+      + (unP.length ? ` ${unP.length} unmatched.` : '') + (unF.length ? ` ${unF.length} files unmatched.` : '');
     showStatus('match-status', type, msg);
-  } catch (e) {
-    showStatus('match-status', 'error', 'Request failed.');
-  }
+  } catch (e) { showStatus('match-status', 'error', 'Request failed.'); }
 }
 
-// ── Generate ──────────────────────────────────────────────────────────────────
 async function generate() {
   const csvInput = document.getElementById('csv-files');
   const sbInv    = document.getElementById('stubhub-invoice');
   const invDet   = document.getElementById('inv-det-file');
   const invFile  = document.getElementById('inv-file');
-
   if (!extractedPayments.length) { showStatus('gen-status','error','Upload the portal screenshot first.'); return; }
   if (!csvInput.files.length)    { showStatus('gen-status','error','Upload Viagogo CSV files.'); return; }
   if (!sbInv.files.length)       { showStatus('gen-status','error','Upload the StubHub Invoice Details report.'); return; }
   if (!invDet.files.length)      { showStatus('gen-status','error','Upload the Network Invoice Details report.'); return; }
   if (!invFile.files.length)     { showStatus('gen-status','error','Upload the Network Invoices report.'); return; }
-
-  const genSt = document.getElementById('gen-status'); genSt.style.display='none';
   showStatus('gen-status', 'info', 'Processing — this may take a moment…');
-
   const fd = new FormData();
   for (const f of csvInput.files) fd.append('csv_files', f);
   fd.append('stubhub_invoice', sbInv.files[0]);
   fd.append('inv_det_file',    invDet.files[0]);
   fd.append('inv_file',        invFile.files[0]);
   fd.append('payments',        JSON.stringify(extractedPayments));
-
   try {
     const res = await fetch('/process', { method: 'POST', body: fd });
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      showStatus('gen-status', 'error', d.error || 'Server error.'); return;
-    }
+    if (!res.ok) { const d = await res.json().catch(()=>({})); showStatus('gen-status','error',d.error||'Server error.'); return; }
     const disposition = res.headers.get('Content-Disposition') || '';
     const match = disposition.match(/filename="?([^"]+)"?/);
     const fname = match ? match[1] : 'Cash Inflow Projection.xlsx';
     const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url; a.download = fname; a.click();
     URL.revokeObjectURL(url);
     showStatus('gen-status', 'success', 'Report downloaded!');
     setTimeout(() => { document.getElementById('gen-status').style.display = 'none'; }, 3000);
-  } catch (e) {
-    showStatus('gen-status', 'error', 'Request failed.');
-  }
+  } catch (e) { showStatus('gen-status', 'error', 'Request failed.'); }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function showStatus(elId, type, html) {
+function showStatus(elId, type, msg) {
   const el = document.getElementById(elId);
-  const icons = {
-    info:    '<div class="spinner"></div>',
-    success: '<i class="ti ti-circle-check"></i>',
-    error:   '<i class="ti ti-alert-circle"></i>',
-    warn:    '<i class="ti ti-alert-triangle"></i>'
-  };
-  el.className = `status ${type}`;
-  el.innerHTML = (icons[type] || '') + `<span>${html}</span>`;
+  const icons = { info: '<div class="spinner"></div>', success: '<i class="ti ti-circle-check"></i>', error: '<i class="ti ti-alert-circle"></i>', warn: '<i class="ti ti-alert-triangle"></i>' };
+  el.className = `status s-${type}`;
+  el.innerHTML = (icons[type]||'') + `<span>${msg}</span>`;
   el.style.display = 'flex';
 }
 
-// ── Clear all ─────────────────────────────────────────────────────────────────
 function clearScreenshot(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   extractedPayments = [];
   document.getElementById('screenshot-input').value = '';
   document.getElementById('dz-thumb').src = '';
   document.getElementById('dz-fname').textContent = '';
-  document.getElementById('screenshot-zone').classList.remove('has-file','dragover');
+  zone.classList.remove('has-file','dragover');
+  document.getElementById('dz-clear').style.display = 'none';
   document.getElementById('extracted-rows').style.display = 'none';
   document.getElementById('extracted-body').innerHTML = '';
-  const st = document.getElementById('extract-status');
-  if (st) st.style.display = 'none';
+  document.getElementById('extract-status').style.display = 'none';
 }
 
 function clearAll() {
   clearScreenshot();
-  ['csv-files','stubhub-invoice','inv-det-file','inv-file'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  const zone = document.getElementById('screenshot-zone');
-  zone.classList.remove('has-file','dragover');
-  document.getElementById('dz-thumb').src = '';
-  document.getElementById('dz-fname').textContent = '';
-  document.getElementById('extracted-rows').style.display = 'none';
-  document.getElementById('extracted-body').innerHTML = '';
-  ['csv-fname','sb-fname','inv-det-fname','inv-fname'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.style.display = 'none'; el.textContent = ''; }
-  });
-  ['fu-csv','fu-sb','fu-invdet','fu-inv'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('has-file','dragover');
+  [['csv-files','csv-fname','fu-csv','One or more .csv files'],
+   ['stubhub-invoice','sb-fname','fu-sb','.xlsx file'],
+   ['inv-det-file','inv-det-fname','fu-invdet','.xlsx file'],
+   ['inv-file','inv-fname','fu-inv','.xlsx file']].forEach(([inp,lbl,zone,hint]) => {
+    document.getElementById(inp).value = '';
+    const l = document.getElementById(lbl);
+    if (l) { l.textContent = hint; l.classList.remove('selected'); }
+    document.getElementById(zone).classList.remove('has-file','dragover');
   });
   document.getElementById('match-results').innerHTML = '';
-  document.getElementById('match-results').style.display = 'none';
-  ['extract-status','match-status','gen-status'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+  document.getElementById('match-results').classList.remove('show');
+  ['match-status','gen-status'].forEach(id => { document.getElementById(id).style.display = 'none'; });
 }
 </script>
 </body>
