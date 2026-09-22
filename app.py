@@ -47,11 +47,16 @@ def extract_payments():
                     'type': 'text',
                     'text': (
                         'This is a screenshot of the StubHub payment portal. '
-                        'Extract every row from the payments table. '
+                        'The table has exactly 6 columns in this order: '
+                        'PAYMENT ID, DATE, PROCEEDS, CHARGES, CREDIT, TOTAL. '
+                        'Extract every data row. '
                         'Return ONLY a JSON array, no other text, no markdown fences. '
                         'Each element must have these exact keys: '
                         'payment_id (string), date (string in DD/MM/YYYY format), '
                         'proceeds (number), charges (number), credit (number). '
+                        'IMPORTANT: DO NOT include the TOTAL column value. '
+                        'Only extract PROCEEDS, CHARGES and CREDIT. '
+                        'Charges and credit are often $0.00 — never confuse TOTAL with CREDIT. '
                         'Preserve negative signs on charges/credit where present. '
                         'Example: [{"payment_id":"65780380","date":"13/05/2026",'
                         '"proceeds":86439.66,"charges":0,"credit":0}]'
