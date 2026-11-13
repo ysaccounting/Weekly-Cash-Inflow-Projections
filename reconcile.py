@@ -4,10 +4,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-POC_CLIENTS = ['Gametime', 'TickPick', 'SeatGeek']
-POD_CLIENTS = ['Vivid Seats', 'GoTickets', 'TicketNetwork', 'TicketsNow']
-POC_ORDER   = ['Gametime', 'TickPick', 'SeatGeek']
-POD_ORDER   = ['Vivid Seats', 'GoTickets', 'TicketNetwork', 'TicketsNow']
+POC_CLIENTS = ['Gametime', 'TickPick', 'SeatGeek', 'GoTickets']
+POD_CLIENTS = ['Vivid Seats', 'TicketNetwork', 'TicketsNow']
+POC_ORDER   = ['Gametime', 'TickPick', 'SeatGeek', 'GoTickets']
+POD_ORDER   = ['Vivid Seats', 'TicketNetwork', 'TicketsNow']
 POD_RENAME  = {'TicketsNow': 'TicketMaster'}
 ALL_SIX     = POC_CLIENTS + POD_CLIENTS
 
@@ -92,7 +92,7 @@ def match_files_to_payments(csv_files: dict, payment_rows: list):
             continue
         found = False
         for pid, (ptotal, pdate) in payment_totals.items():
-            if abs(ftotal - ptotal) < 0.05 and pid not in matched:
+            if abs(ftotal - ptotal) < 1.00 and pid not in matched:
                 matched[pid] = (fname, pdate)
                 found = True
                 break
@@ -354,8 +354,8 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     _sc(ws, 2, 1, 'Pay on Confirmation',
         bg=DARK_BLUE, fg=WHITE, bold=True, sz=12, merge_to=5)
     ws.row_dimensions[3].height = 13
-    _sc(ws, 3, 1, 'Gametime - TickPick - SeatGeek',
-        fg='777777', sz=9, merge_to=2)
+    _sc(ws, 3, 1, 'Gametime - TickPick - SeatGeek - GoTickets',
+        fg='777777', sz=9, merge_to=5)
     ws.row_dimensions[4].height = 18
     _sc(ws, 4, 1, 'Network',   bg=MID_BLUE, fg=WHITE, bold=True, ha='center')
     _sc(ws, 4, 2, 'New Sales', bg=MID_BLUE, fg=WHITE, bold=True, ha='center')
@@ -375,7 +375,7 @@ def _write_part2_sheet(ws, date_range, poc_rows, poc_total, pod_data):
     _sc(ws, gap, 1, 'Pay on Delivery',
         bg=DARK_BLUE, fg=WHITE, bold=True, sz=12, merge_to=5)
     ws.row_dimensions[gap + 1].height = 13
-    _sc(ws, gap + 1, 1, 'Vivid Seats - GoTickets - TicketNetwork - TicketMaster',
+    _sc(ws, gap + 1, 1, 'Vivid Seats - TicketNetwork - TicketMaster',
         fg='777777', sz=9, merge_to=5)
 
     hdr = gap + 2
